@@ -1,0 +1,2346 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kompetensbedömning IT-service</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #2d3561;
+            --primary-light: #4a5a8f;
+            --accent: #ff6b35;
+            --bg: #f8f9fc;
+            --surface: #ffffff;
+            --text: #1a1d2e;
+            --text-light: #6b7280;
+            --border: #e5e7eb;
+        }
+
+        body {
+            font-family: 'Instrument Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            padding: 60px 40px;
+            border-radius: 20px;
+            margin-bottom: 40px;
+            box-shadow: 0 20px 60px rgba(45, 53, 97, 0.2);
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            font-weight: 700;
+            margin-bottom: 15px;
+            letter-spacing: -0.02em;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.95;
+            max-width: 700px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: var(--border);
+            border-radius: 10px;
+            margin-bottom: 40px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent) 0%, #ff8555 100%);
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 10px;
+            width: 0%;
+        }
+
+        .section {
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 40px;
+            margin-bottom: 30px;
+            border: 1px solid var(--border);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+        }
+
+        .section-title {
+            font-size: 1.6em;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 10px;
+            letter-spacing: -0.01em;
+        }
+
+        .section-subtitle {
+            font-size: 0.95em;
+            color: var(--text-light);
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .question {
+            margin-bottom: 32px;
+        }
+
+        .question-text {
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 16px;
+            font-size: 1.05em;
+            line-height: 1.5;
+        }
+
+        select, input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-size: 1em;
+            font-family: inherit;
+            background: var(--surface);
+            transition: all 0.2s;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+        }
+
+        select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%232d3561' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            padding-right: 40px;
+        }
+
+        .option {
+            display: block;
+            padding: 16px 18px;
+            margin-bottom: 10px;
+            background: var(--bg);
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .option:hover {
+            border-color: var(--accent);
+            background: #fff5f2;
+            transform: translateX(2px);
+        }
+
+        .option input[type="checkbox"] {
+            margin-right: 12px;
+            cursor: pointer;
+            width: 20px;
+            height: 20px;
+            accent-color: var(--accent);
+        }
+
+        .option input[type="radio"] {
+            margin-right: 12px;
+            cursor: pointer;
+        }
+
+        .frequency-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 20px;
+        }
+
+        .freq-header {
+            background: var(--primary);
+            color: white;
+            padding: 12px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.85em;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .freq-header:first-child {
+            text-align: left;
+            border-radius: 10px 0 0 0;
+        }
+
+        .freq-header:last-child {
+            border-radius: 0 10px 0 0;
+        }
+
+        .freq-row {
+            background: var(--surface);
+        }
+
+        .freq-row:hover {
+            background: var(--bg);
+        }
+
+        .freq-label {
+            padding: 16px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-right: none;
+            font-size: 0.95em;
+            line-height: 1.4;
+        }
+
+        .freq-row:first-child .freq-label {
+            border-top: 2px solid var(--primary);
+        }
+
+        .freq-cell {
+            padding: 16px;
+            text-align: center;
+            background: var(--surface);
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .freq-row:first-child .freq-cell {
+            border-top: 2px solid var(--primary);
+        }
+
+        .freq-cell:last-child {
+            border-right: 1px solid var(--border);
+        }
+
+        .freq-cell input[type="radio"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: var(--accent);
+        }
+
+        .submit-btn {
+            display: block;
+            width: 100%;
+            padding: 20px;
+            background: linear-gradient(135deg, var(--accent) 0%, #ff8555 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.3em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 40px;
+            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+        }
+
+        .submit-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 107, 53, 0.4);
+        }
+
+        .submit-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .result-container {
+            display: none;
+            margin-top: 50px;
+            padding: 50px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            border-radius: 20px;
+            color: white;
+            box-shadow: 0 20px 60px rgba(45, 53, 97, 0.3);
+        }
+
+        .result-container.show {
+            display: block;
+            animation: slideUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .score-circle {
+            width: 180px;
+            height: 180px;
+            margin: 0 auto 30px;
+            border-radius: 50%;
+            border: 8px solid rgba(255,255,255,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .score-number {
+            font-size: 3em;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .score-total {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .result-level {
+            font-size: 2.5em;
+            font-weight: 700;
+            text-align: center;
+            margin: 30px 0 20px;
+            letter-spacing: -0.02em;
+        }
+
+        .result-desc {
+            text-align: center;
+            font-size: 1.2em;
+            opacity: 0.95;
+            margin-bottom: 40px;
+        }
+
+        .result-breakdown {
+            background: rgba(255,255,255,0.1);
+            padding: 40px;
+            border-radius: 16px;
+            margin: 30px 0;
+            backdrop-filter: blur(10px);
+        }
+
+        .breakdown-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .breakdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .breakdown-label {
+            flex: 1;
+        }
+
+        .breakdown-label strong {
+            display: block;
+            font-size: 1.1em;
+            margin-bottom: 5px;
+        }
+
+        .breakdown-label span {
+            opacity: 0.85;
+            font-size: 0.95em;
+        }
+
+        .breakdown-value {
+            font-size: 2em;
+            font-weight: 700;
+            margin-left: 30px;
+        }
+
+        .flaskhals-box {
+            margin-top: 30px;
+            padding: 30px;
+            background: rgba(255, 215, 0, 0.2);
+            border-left: 5px solid #ffd700;
+            border-radius: 12px;
+        }
+
+        .flaskhals-box strong {
+            font-size: 1.2em;
+            display: block;
+            margin-bottom: 15px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .email-btn {
+            display: block;
+            width: 100%;
+            padding: 16px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid rgba(255,255,255,0.5);
+            border-radius: 12px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 20px;
+        }
+
+        .email-btn:hover {
+            background: rgba(255,255,255,0.3);
+            border-color: white;
+            transform: translateY(-2px);
+        }
+
+        .email-report {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+            overflow-y: auto;
+            padding: 40px 20px;
+        }
+
+        .email-report.show {
+            display: block;
+        }
+
+        .email-content {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            padding: 60px;
+            color: var(--text);
+        }
+
+        .email-header {
+            text-align: center;
+            margin-bottom: 50px;
+            padding-bottom: 30px;
+            border-bottom: 3px solid var(--primary);
+        }
+
+        .email-header h1 {
+            color: var(--primary);
+            font-size: 2.2em;
+            margin-bottom: 10px;
+        }
+
+        .email-header .date {
+            color: var(--text-light);
+            font-size: 1em;
+        }
+
+        .email-section {
+            margin-bottom: 40px;
+        }
+
+        .email-section h2 {
+            color: var(--primary);
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .email-info-grid {
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            gap: 15px 30px;
+            margin-bottom: 20px;
+        }
+
+        .email-info-label {
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .email-info-value {
+            color: var(--text);
+        }
+
+        .email-result-box {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 12px;
+            margin: 30px 0;
+        }
+
+        .email-result-level {
+            font-size: 2.5em;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .email-result-desc {
+            text-align: center;
+            font-size: 1.2em;
+            opacity: 0.95;
+            margin-bottom: 30px;
+        }
+
+        .email-breakdown {
+            background: rgba(255,255,255,0.1);
+            padding: 30px;
+            border-radius: 10px;
+        }
+
+        .email-breakdown-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .email-breakdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .email-qa {
+            margin-bottom: 25px;
+        }
+
+        .email-q {
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+
+        .email-a {
+            color: var(--accent);
+            font-weight: 600;
+            padding-left: 20px;
+        }
+
+        .email-freq-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .email-freq-table th {
+            background: var(--primary);
+            color: white;
+            padding: 10px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .email-freq-table td {
+            padding: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .email-freq-table tr:hover {
+            background: var(--bg);
+        }
+
+        .email-actions {
+            position: sticky;
+            bottom: 0;
+            background: white;
+            padding: 30px 0;
+            border-top: 2px solid var(--border);
+            margin-top: 40px;
+            display: flex;
+            gap: 15px;
+        }
+
+        .email-actions button {
+            flex: 1;
+            padding: 16px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-print {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-print:hover {
+            background: var(--primary-light);
+            transform: translateY(-2px);
+        }
+
+        .btn-close {
+            background: var(--border);
+            color: var(--text);
+        }
+
+        .btn-close:hover {
+            background: var(--text-light);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        @media print {
+            .email-actions {
+                display: none;
+            }
+            .email-report {
+                position: static;
+                background: white;
+                padding: 0;
+            }
+            .email-content {
+                max-width: 100%;
+                box-shadow: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .email-content {
+                padding: 30px 20px;
+            }
+            .email-info-grid {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 40px 30px;
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .section {
+                padding: 30px 20px;
+            }
+
+            .frequency-table {
+                font-size: 0.85em;
+            }
+
+            .freq-label, .freq-cell {
+                padding: 12px 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Kompetensbedömning IT-service</h1>
+            <p>Besvara frågorna utifrån din faktiska arbetssituation för en objektiv bedömning enligt organisationens nivåkriterier</p>
+            <div id="userInfo" style="margin-top: 15px; opacity: 0.9; font-size: 0.95em;"></div>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+
+        <form id="assessmentForm">
+            
+            <!-- ═══════════════════════════════════════════════════════════ -->
+            <!-- SEKTION 1: BEFATTNINGSVAL -->
+            <!-- ═══════════════════════════════════════════════════════════ -->
+            <div class="section">
+                <div class="section-title">Välj din befattning</div>
+                <div class="question">
+                    <select name="befattning" id="befattningSelect" required>
+                        <option value="">-- Välj befattning --</option>
+                        <option value="it_inkopare">IT Inköpare</option>
+                        <option value="kundansvarig">Kundansvarig</option>
+                        <option value="mjukvaruutvecklare">Mjukvaruutvecklare</option>
+                        <option value="natverkstekniker">Nätverkstekniker</option>
+                        <option value="it_projektledare">IT Projektledare</option>
+                        <option value="supporttekniker">Supporttekniker</option>
+                        <option value="systemadministrator">Systemadministratör</option>
+                        <option value="systemspecialist">Systemspecialist</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- ═══════════════════════════════════════════════════════════ -->
+            <!-- SEKTION 2: GRUNDDATA -->
+            <!-- ═══════════════════════════════════════════════════════════ -->
+            <div class="section hidden" id="grunddataSection">
+                <div class="section-title">Bakgrundsinformation</div>
+                
+                <div class="question" id="befattningsFraga">
+                    <!-- Dynamiskt innehåll -->
+                </div>
+
+                <div class="question">
+                    <div class="question-text">Hur många års arbetslivserfarenhet har du inom ditt område?</div>
+                    <input type="number" name="years_experience" min="0" max="50" step="0.5" required> år
+                </div>
+
+                <div class="question">
+                    <div class="question-text">Vilken kompetens har du? (Markera alla som stämmer)</div>
+                    <label class="option">
+                        <input type="checkbox" name="cert_basic">
+                        <span>Grundläggande kompetens (motsv. Associate-nivå eller dokumenterad grundutbildning)</span>
+                    </label>
+                    <label class="option">
+                        <input type="checkbox" name="cert_advanced">
+                        <span>Fördjupad kompetens (motsv. Professional-nivå eller dokumenterad fördjupning)</span>
+                    </label>
+                    <label class="option">
+                        <input type="checkbox" name="cert_expert">
+                        <span>Expertkompetens (motsv. Architect/Expert-nivå eller dokumenterad expertis)</span>
+                    </label>
+                    <label class="option">
+                        <input type="checkbox" name="cert_selfstudy">
+                        <span>Omfattande självstudier (kurser, böcker, labmiljöer)</span>
+                    </label>
+                    <label class="option">
+                        <input type="checkbox" name="cert_internal">
+                        <span>Intern utbildning eller dokumenterad kompetens</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- ═══════════════════════════════════════════════════════════ -->
+            <!-- SEKTION 3: ARBETSVECKA - GEMENSAMMA FRÅGOR (15 st) -->
+            <!-- ═══════════════════════════════════════════════════════════ -->
+            <div class="section hidden" id="gemensannaSection">
+                <div class="section-title">Din typiska arbetsvecka</div>
+                <div class="section-subtitle">
+                    Hur ofta inträffar följande i din vardag?<br>
+                    <strong>1</strong> = Aldrig &nbsp;|&nbsp; <strong>2</strong> = Några gånger/månad &nbsp;|&nbsp; 
+                    <strong>3</strong> = Varje vecka &nbsp;|&nbsp; <strong>4</strong> = Flera ggr/vecka &nbsp;|&nbsp; <strong>5</strong> = Dagligen
+                </div>
+                
+                <table class="frequency-table">
+                    <thead>
+                        <tr>
+                            <th class="freq-header" style="width: 50%;">Påstående</th>
+                            <th class="freq-header">1</th>
+                            <th class="freq-header">2</th>
+                            <th class="freq-header">3</th>
+                            <th class="freq-header">4</th>
+                            <th class="freq-header">5</th>
+                        </tr>
+                    </thead>
+                    <tbody id="gemensamma_tbody">
+                        <!-- Gemensamma frågor läggs in här -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- ═══════════════════════════════════════════════════════════ -->
+            <!-- SEKTION 4: BEFATTNINGSSPECIFIKA FRÅGOR (15 st) -->
+            <!-- ═══════════════════════════════════════════════════════════ -->
+            <div class="section hidden" id="specifikSection">
+                <div class="section-title">Befattningsspecifika frågor</div>
+                <div class="section-subtitle">
+                    Frågor anpassade för din roll<br>
+                    <strong>1</strong> = Aldrig &nbsp;|&nbsp; <strong>2</strong> = Några gånger/månad &nbsp;|&nbsp; 
+                    <strong>3</strong> = Varje vecka &nbsp;|&nbsp; <strong>4</strong> = Flera ggr/vecka &nbsp;|&nbsp; <strong>5</strong> = Dagligen
+                </div>
+                
+                <table class="frequency-table">
+                    <thead>
+                        <tr>
+                            <th class="freq-header" style="width: 50%;">Påstående</th>
+                            <th class="freq-header">1</th>
+                            <th class="freq-header">2</th>
+                            <th class="freq-header">3</th>
+                            <th class="freq-header">4</th>
+                            <th class="freq-header">5</th>
+                        </tr>
+                    </thead>
+                    <tbody id="specifik_tbody">
+                        <!-- Befattningsspecifika frågor läggs in här -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- ═══════════════════════════════════════════════════════════ -->
+            <!-- SEKTION 5: SITUATIONER (6 st) -->
+            <!-- ═══════════════════════════════════════════════════════════ -->
+            <div class="section hidden" id="situationerSection">
+                <div class="section-title">Hur du hanterar situationer</div>
+                <div id="situationer_container">
+                    <!-- Situationsfrågor läggs in här -->
+                </div>
+            </div>
+
+            <button type="submit" class="submit-btn hidden" id="submitBtn">Beräkna min nivå</button>
+        </form>
+
+        <div class="result-container" id="resultContainer">
+            <!-- Resultat visas här -->
+        </div>
+
+        <!-- Email-rapport modal -->
+        <div class="email-report" id="emailReport">
+            <div class="email-content" id="emailContent">
+                <!-- Email-innehåll genereras här -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ═══════════════════════════════════════════════════════════
+        // DATA: BEFATTNINGAR
+        // ═══════════════════════════════════════════════════════════
+        
+        const BEFATTNINGAR = {
+            it_inkopare: {
+                namn: 'IT Inköpare',
+                nivaer: [1, 2, 3],
+                fraga: 'Vilket är ditt primära ansvarsområde inom inköp?',
+                placeholder: 't.ex. IT-utrustning, tjänster, upphandling'
+            },
+            kundansvarig: {
+                namn: 'Kundansvarig',
+                nivaer: [2, 3],
+                fraga: 'Vilka kundgrupper ansvarar du för?',
+                placeholder: 't.ex. förvaltningar, verksamhetsområden'
+            },
+            mjukvaruutvecklare: {
+                namn: 'Mjukvaruutvecklare',
+                nivaer: [1, 2, 3, 4],
+                fraga: 'Vilka teknologier/plattformar arbetar du primärt med?',
+                placeholder: 't.ex. .NET, Java, React, Python'
+            },
+            natverkstekniker: {
+                namn: 'Nätverkstekniker',
+                nivaer: [1, 2, 3, 4],
+                fraga: 'Vilket nätverksområde ansvarar du för?',
+                placeholder: 't.ex. LAN, WAN, trådlöst, säkerhet'
+            },
+            it_projektledare: {
+                namn: 'IT Projektledare',
+                nivaer: [1, 2, 3, 4],
+                fraga: 'Vilken typ av IT-projekt leder du typiskt?',
+                placeholder: 't.ex. infrastruktur, applikationer, migrering'
+            },
+            supporttekniker: {
+                namn: 'Supporttekniker',
+                nivaer: [1, 2, 3],
+                fraga: 'Vilken typ av support arbetar du med?',
+                placeholder: 't.ex. 1:a linje, användarstöd, teknisk support'
+            },
+            systemadministrator: {
+                namn: 'Systemadministratör',
+                nivaer: [1, 2, 3, 4],
+                fraga: 'Vilka system/infrastruktur ansvarar du för?',
+                placeholder: 't.ex. Windows Server, Linux, molntjänster'
+            },
+            systemspecialist: {
+                namn: 'Systemspecialist',
+                nivaer: [1, 2, 3, 4],
+                fraga: 'Vilket system eller plattform är du specialist på?',
+                placeholder: 't.ex. ServiceNow, SharePoint, SAP'
+            }
+        };
+
+        // ═══════════════════════════════════════════════════════════
+        // DATA: GEMENSAMMA FRÅGOR (15 st - identiska för alla)
+        // ═══════════════════════════════════════════════════════════
+        
+        const GEMENSAMMA_FRAGOR = [
+            { id: 'gem_1', text: 'Kollegor ber mig om input när de ska lösa något tekniskt', inverterad: false },
+            { id: 'gem_2', text: 'Mina arbetsuppgifter kommer med tydliga beskrivningar av vad som ska göras', inverterad: false },
+            { id: 'gem_3', text: 'Jag stämmer av med min chef eller senior specialist när jag är osäker', inverterad: true },
+            { id: 'gem_4', text: 'Jag har kontakt med andra team om tekniska saker direkt', inverterad: false },
+            { id: 'gem_5', text: 'Någon annan har planerat vad jag ska arbeta med', inverterad: false },
+            { id: 'gem_6', text: 'Jag skriver dokumentation som andra kollegor använder', inverterad: false },
+            { id: 'gem_7', text: 'Min chef vill se över mina lösningar innan de rullas ut', inverterad: true },
+            { id: 'gem_8', text: 'Jag jobbar med problem där vi inte har någon färdig lösning', inverterad: false },
+            { id: 'gem_9', text: 'Jag hänvisar ärenden vidare till andra specialister', inverterad: true },
+            { id: 'gem_10', text: 'Jag hjälper andra att lära sig', inverterad: false },
+            { id: 'gem_11', text: 'Jag är med i diskussioner om var vi ska vara om 6-12 månader', inverterad: false },
+            { id: 'gem_12', text: 'Jag får uppgifter formulerade som mål snarare än steg', inverterad: false },
+            { id: 'gem_13', text: 'Jag leder projekt som påverkar många användare', inverterad: false },
+            { id: 'gem_14', text: 'Jag diskuterar tekniska beslut med min chef innan jag går vidare', inverterad: true },
+            { id: 'gem_15', text: 'Jag får information om vad som ska göras av min chef eller projektledare', inverterad: true }
+        ];
+
+        // ═══════════════════════════════════════════════════════════
+        // DATA: BEFATTNINGSSPECIFIKA FRÅGOR (15 st per befattning)
+        // ═══════════════════════════════════════════════════════════
+        
+        const SPECIFIKA_FRAGOR = {
+            it_inkopare: [
+                { id: 'ink_1', text: 'Jag hanterar beställningar i verksamhetssystemet' },
+                { id: 'ink_2', text: 'Jag gör behovsanalys med interna kunder' },
+                { id: 'ink_3', text: 'Jag kommunicerar med leverantörer om leveranser' },
+                { id: 'ink_4', text: 'Jag ansvarar för upphandlingsprocesser' },
+                { id: 'ink_5', text: 'Jag tar ekonomiskt ansvar för inköp' },
+                { id: 'ink_6', text: 'Jag ger råd om lämplig utrustning eller tjänster' },
+                { id: 'ink_7', text: 'Jag följer upp fakturor och avtal' },
+                { id: 'ink_8', text: 'Jag utvärderar nya produkter eller tjänster' },
+                { id: 'ink_9', text: 'Jag arbetar med leverantörsrelationer strategiskt' },
+                { id: 'ink_10', text: 'Jag gör marknadsanalyser' },
+                { id: 'ink_11', text: 'Jag utvecklar inköpsprocesser' },
+                { id: 'ink_12', text: 'Jag förhandlar med leverantörer' },
+                { id: 'ink_13', text: 'Jag ansvarar för avrop från ramavtal' },
+                { id: 'ink_14', text: 'Jag säkerställer att inköp följer kommunens policy' },
+                { id: 'ink_15', text: 'Jag analyserar inköpsbehov långsiktigt' }
+            ],
+            kundansvarig: [
+                { id: 'kund_1', text: 'Jag ansvarar för kundrelationer' },
+                { id: 'kund_2', text: 'Jag arbetar med NKI-undersökningar' },
+                { id: 'kund_3', text: 'Jag styr kundens behov till rätt tjänst' },
+                { id: 'kund_4', text: 'Jag kommunicerar IT-tjänster till kunder' },
+                { id: 'kund_5', text: 'Jag hanterar klagomål eller missnöje' },
+                { id: 'kund_6', text: 'Jag samordnar mellan IT-service och kundorganisationer' },
+                { id: 'kund_7', text: 'Jag följer upp kundnöjdhet' },
+                { id: 'kund_8', text: 'Jag arbetar med Demand-processen för nya tjänster' },
+                { id: 'kund_9', text: 'Jag agerar rådgivare för strategiska IT-frågor' },
+                { id: 'kund_10', text: 'Jag identifierar nya tjänstebehov hos kunder' },
+                { id: 'kund_11', text: 'Jag presenterar tjänsteportföljen för kunder' },
+                { id: 'kund_12', text: 'Jag deltar i strategiska dialoger med kundledning' },
+                { id: 'kund_13', text: 'Jag driver förbättringsinitiativ baserat på kundfeedback' },
+                { id: 'kund_14', text: 'Jag har god förståelse för kundens verksamhet' },
+                { id: 'kund_15', text: 'Jag utvecklar kundrelationer långsiktigt' }
+            ],
+            mjukvaruutvecklare: [
+                { id: 'dev_1', text: 'Jag skriver och testar kod' },
+                { id: 'dev_2', text: 'Jag arbetar med buggfixar' },
+                { id: 'dev_3', text: 'Jag deltar i kodgranskningar' },
+                { id: 'dev_4', text: 'Jag arbetar med versionskontroll' },
+                { id: 'dev_5', text: 'Jag designar tekniska lösningar' },
+                { id: 'dev_6', text: 'Jag bidrar till systemarkitektur' },
+                { id: 'dev_7', text: 'Jag leder tekniska diskussioner' },
+                { id: 'dev_8', text: 'Jag optimerar prestanda och kodkvalitet' },
+                { id: 'dev_9', text: 'Jag arbetar med flera programmeringsspråk' },
+                { id: 'dev_10', text: 'Jag implementerar avancerade designmönster' },
+                { id: 'dev_11', text: 'Jag definierar tekniska standarder' },
+                { id: 'dev_12', text: 'Jag driver teknisk innovation' },
+                { id: 'dev_13', text: 'Jag samarbetar med andra avdelningar om tekniska lösningar' },
+                { id: 'dev_14', text: 'Jag utför avancerad felsökning' },
+                { id: 'dev_15', text: 'Jag mentorar andra utvecklare' }
+            ],
+            natverkstekniker: [
+                { id: 'nat_1', text: 'Jag installerar och konfigurerar nätverksutrustning' },
+                { id: 'nat_2', text: 'Jag assisterar vid nätverksinstallationer' },
+                { id: 'nat_3', text: 'Jag upprätthåller dokumentation av nätverk' },
+                { id: 'nat_4', text: 'Jag felsöker nätverksproblem självständigt' },
+                { id: 'nat_5', text: 'Jag arbetar med VLAN, subnetting och routing' },
+                { id: 'nat_6', text: 'Jag använder nätverksövervakningsverktyg' },
+                { id: 'nat_7', text: 'Jag designar nätverksarkitektur' },
+                { id: 'nat_8', text: 'Jag hanterar brandväggar och VPN-lösningar' },
+                { id: 'nat_9', text: 'Jag utvecklar nätverkspolicies och standarder' },
+                { id: 'nat_10', text: 'Jag leder nätverksrelaterade projekt' },
+                { id: 'nat_11', text: 'Jag mentorerar andra inom nätverksområdet' },
+                { id: 'nat_12', text: 'Jag planerar strategiskt för nätverkets framtid' },
+                { id: 'nat_13', text: 'Jag säkerställer säkerhet i nätverket' },
+                { id: 'nat_14', text: 'Jag planerar uppgraderingar av nätverksinfrastruktur' },
+                { id: 'nat_15', text: 'Jag samarbetar med leverantörer om nätverkslösningar' }
+            ],
+            it_projektledare: [
+                { id: 'proj_1', text: 'Jag assisterar i mindre IT-projekt' },
+                { id: 'proj_2', text: 'Jag samordnar resurser i projekt' },
+                { id: 'proj_3', text: 'Jag skapar projektplaner och tidplaner' },
+                { id: 'proj_4', text: 'Jag ansvarar för genomförande av IT-projekt' },
+                { id: 'proj_5', text: 'Jag sätter upp mål och effektmål' },
+                { id: 'proj_6', text: 'Jag håller kontakt med projektets intressenter' },
+                { id: 'proj_7', text: 'Jag hanterar projektbudgetar' },
+                { id: 'proj_8', text: 'Jag leder projektteam' },
+                { id: 'proj_9', text: 'Jag arbetar med riskhantering' },
+                { id: 'proj_10', text: 'Jag leder flera projekt samtidigt' },
+                { id: 'proj_11', text: 'Jag har portföljansvar för projekt' },
+                { id: 'proj_12', text: 'Jag utvecklar projektledningsprocesser' },
+                { id: 'proj_13', text: 'Jag koordinerar mellan olika projekt' },
+                { id: 'proj_14', text: 'Jag optimerar resursfördelning strategiskt' },
+                { id: 'proj_15', text: 'Jag driver kontinuerlig förbättring av projektmetodik' }
+            ],
+            supporttekniker: [
+                { id: 'supp_1', text: 'Jag hjälper användare med digitala verktyg' },
+                { id: 'supp_2', text: 'Jag utför enkel felsökning' },
+                { id: 'supp_3', text: 'Jag hanterar supportärenden i ärendesystem' },
+                { id: 'supp_4', text: 'Jag löser mer komplexa supportärenden' },
+                { id: 'supp_5', text: 'Jag arbetar med fel på plats i verksamheten' },
+                { id: 'supp_6', text: 'Jag ger support för flera olika system' },
+                { id: 'supp_7', text: 'Jag utför avancerad felsökning' },
+                { id: 'supp_8', text: 'Jag arbetar med ITIL och ITSM-processer' },
+                { id: 'supp_9', text: 'Jag eskalerar ärenden när det behövs' },
+                { id: 'supp_10', text: 'Jag dokumenterar lösningar' },
+                { id: 'supp_11', text: 'Jag identifierar återkommande problem' },
+                { id: 'supp_12', text: 'Jag utbildar användare' },
+                { id: 'supp_13', text: 'Jag bidrar till förbättring av supportprocesser' },
+                { id: 'supp_14', text: 'Jag arbetar proaktivt för att förhindra problem' },
+                { id: 'supp_15', text: 'Jag mentorerar andra supporttekniker' }
+            ],
+            systemadministrator: [
+                { id: 'sysadm_1', text: 'Jag installerar och konfigurerar system' },
+                { id: 'sysadm_2', text: 'Jag övervakar systemprestanda' },
+                { id: 'sysadm_3', text: 'Jag hanterar grundläggande problem under övervakning' },
+                { id: 'sysadm_4', text: 'Jag hanterar säkerhetsuppdateringar' },
+                { id: 'sysadm_5', text: 'Jag arbetar med scriptspråk för automatisering' },
+                { id: 'sysadm_6', text: 'Jag löser komplexa systemproblem' },
+                { id: 'sysadm_7', text: 'Jag designar systemlösningar' },
+                { id: 'sysadm_8', text: 'Jag arbetar med molntjänster och virtualisering' },
+                { id: 'sysadm_9', text: 'Jag implementerar säkerhetsåtgärder' },
+                { id: 'sysadm_10', text: 'Jag leder tekniska projekt' },
+                { id: 'sysadm_11', text: 'Jag utvecklar beredskapsplaner' },
+                { id: 'sysadm_12', text: 'Jag definierar tekniska strategier' },
+                { id: 'sysadm_13', text: 'Jag optimerar infrastrukturprocesser' },
+                { id: 'sysadm_14', text: 'Jag driver teknisk innovation' },
+                { id: 'sysadm_15', text: 'Jag säkerställer att lösningar möter verksamhetsmål' }
+            ],
+            systemspecialist: [
+                { id: 'sys_1', text: 'Jag arbetar med installation av mitt system' },
+                { id: 'sys_2', text: 'Jag konfigurerar mitt system' },
+                { id: 'sys_3', text: 'Jag övervakar systemprestanda' },
+                { id: 'sys_4', text: 'Jag löser problem i systemet självständigt' },
+                { id: 'sys_5', text: 'Jag kan lösa komplexa problem direkt från minnet' },
+                { id: 'sys_6', text: 'Jag ger användarsupport för systemet' },
+                { id: 'sys_7', text: 'Jag designar systemlösningar' },
+                { id: 'sys_8', text: 'Jag optimerar systemprestanda' },
+                { id: 'sys_9', text: 'Jag säkerställer hög tillgänglighet' },
+                { id: 'sys_10', text: 'Jag leder projekt relaterade till systemet' },
+                { id: 'sys_11', text: 'Jag mentorerar andra om systemet' },
+                { id: 'sys_12', text: 'Jag utvecklar strategier för systemet' },
+                { id: 'sys_13', text: 'Jag driver innovation kring systemet' },
+                { id: 'sys_14', text: 'Jag säkerställer integration med andra system' },
+                { id: 'sys_15', text: 'Jag utvecklar långsiktiga IT-strategier för systemet' }
+            ]
+        };
+
+        // ═══════════════════════════════════════════════════════════
+        // DATA: SITUATIONSFRÅGOR (6 st, befattningsspecifika)
+        // ═══════════════════════════════════════════════════════════
+        
+        const SITUATIONER = {
+            it_inkopare: [
+                {
+                    id: 'sit_1',
+                    fraga: 'En verksamhet ringer och behöver akut IT-utrustning samma dag. Vad gör du först?',
+                    alternativ: [
+                        { value: 'a', text: 'Kollar om det finns befintligt avtal att avropa från' },
+                        { value: 'b', text: 'Kontaktar min chef för instruktioner' },
+                        { value: 'c', text: 'Ringer leverantören direkt för snabbast möjliga leverans' },
+                        { value: 'd', text: 'Gör en snabb behovsanalys för att säkerställa rätt utrustning' }
+                    ]
+                },
+                {
+                    id: 'sit_2',
+                    fraga: 'Efter att du hanterat en beställning, vad gör du?',
+                    alternativ: [
+                        { value: 'a', text: 'Stänger ärendet och går vidare' },
+                        { value: 'b', text: 'Dokumenterar i systemet och informerar kund' },
+                        { value: 'c', text: 'Kollar om det finns liknande kommande behov' },
+                        { value: 'd', text: 'Följer upp om det är del av ett mönster som kräver ramavtal' }
+                    ]
+                },
+                {
+                    id: 'sit_3',
+                    fraga: 'En leverantör presenterar en ny produktkategori. Hur hanterar du det?',
+                    alternativ: [
+                        { value: 'a', text: 'Noterar informationen för framtida referens' },
+                        { value: 'b', text: 'Läser produktinformation och delar med teamet' },
+                        { value: 'c', text: 'Utvärderar om det matchar kända behov i organisationen' },
+                        { value: 'd', text: 'Analyserar strategiskt om det bör bli del av tjänsteportföljen' }
+                    ]
+                },
+                {
+                    id: 'sit_4',
+                    fraga: 'En kollega frågar om en produkt du inte känner till. Vad gör du?',
+                    alternativ: [
+                        { value: 'a', text: 'Hänvisar till senior inköpare' },
+                        { value: 'b', text: 'Kollar leverantörskatalog och återkommer' },
+                        { value: 'c', text: 'Gör research och ger rekommendation' },
+                        { value: 'd', text: 'Samlar in behov från flera håll för bättre inköpsvillkor' }
+                    ]
+                },
+                {
+                    id: 'sit_5',
+                    fraga: 'Hur ofta har du schemalagda avstämningar med din chef?',
+                    alternativ: [
+                        { value: '1', text: 'Flera gånger per vecka eller dagligen' },
+                        { value: '2', text: 'En gång per vecka' },
+                        { value: '3', text: 'Varannan vecka eller mer sällan' },
+                        { value: '4', text: 'Vid behov, inget fast schema' }
+                    ]
+                },
+                {
+                    id: 'sit_6',
+                    fraga: 'När du kommer på morgonen, vad gör du först?',
+                    alternativ: [
+                        { value: 'a', text: 'Kollar inkommande beställningar' },
+                        { value: 'b', text: 'Kollar min uppgiftslista från chef' },
+                        { value: 'c', text: 'Går igenom mejl och prioriterar dagens arbete' },
+                        { value: 'd', text: 'Fortsätter på strategiska upphandlingsprojekt' }
+                    ]
+                }
+            ],
+            kundansvarig: [
+                {
+                    id: 'sit_1',
+                    fraga: 'En förvaltningschef ringer upprörd över IT-tjänsternas kvalitet. Vad gör du?',
+                    alternativ: [
+                        { value: 'a', text: 'Lyssnar och eskalerar till min chef' },
+                        { value: 'b', text: 'Lyssnar, dokumenterar och lovar återkoppling' },
+                        { value: 'c', text: 'Analyserar problemet med kunden och involverar rätt team' },
+                        { value: 'd', text: 'Ser det som strategisk input för tjänsteutveckling' }
+                    ]
+                },
+                {
+                    id: 'sit_2',
+                    fraga: 'Efter ett kundmöte, vad gör du?',
+                    alternativ: [
+                        { value: 'a', text: 'Skriver snabb sammanfattning till chef' },
+                        { value: 'b', text: 'Dokumenterar och fördelar åtgärdspunkter' },
+                        { value: 'c', text: 'Identifierar nya tjänstebehov att utreda' },
+                        { value: 'd', text: 'Analyserar strategiska implikationer för tjänsteportföljen' }
+                    ]
+                },
+                {
+                    id: 'sit_3',
+                    fraga: 'Kunden vill ha en ny IT-tjänst som inte finns. Hur hanterar du det?',
+                    alternativ: [
+                        { value: 'a', text: 'Informerar om befintligt utbud' },
+                        { value: 'b', text: 'Dokumenterar behovet för Demand-processen' },
+                        { value: 'c', text: 'Utvärderar möjlighet och affärsnytta' },
+                        { value: 'd', text: 'Driver business case genom organisationen' }
+                    ]
+                },
+                {
+                    id: 'sit_4',
+                    fraga: 'Du blir kontaktad om en teknisk fråga du inte kan svara på. Vad gör du?',
+                    alternativ: [
+                        { value: 'a', text: 'Hänvisar till teknisk specialist' },
+                        { value: 'b', text: 'Lovar ta reda på och återkomma' },
+                        { value: 'c', text: 'Faciliterar kontakt mellan kund och rätt expertis' },
+                        { value: 'd', text: 'Koordinerar lösning med flera team om behövs' }
+                    ]
+                },
+                {
+                    id: 'sit_5',
+                    fraga: 'Hur ofta har du schemalagda avstämningar med din chef?',
+                    alternativ: [
+                        { value: '1', text: 'Flera gånger per vecka eller dagligen' },
+                        { value: '2', text: 'En gång per vecka' },
+                        { value: '3', text: 'Varannan vecka eller mer sällan' },
+                        { value: '4', text: 'Vid behov, inget fast schema' }
+                    ]
+                },
+                {
+                    id: 'sit_6',
+                    fraga: 'När du kommer på morgonen, vad gör du först?',
+                    alternativ: [
+                        { value: 'a', text: 'Kollar kundfeedback och incidenter' },
+                        { value: 'b', text: 'Kollar min dagordning från chef' },
+                        { value: 'c', text: 'Går igenom kundkontakter och planerar dagen' },
+                        { value: 'd', text: 'Arbetar på strategiska kundrelationsinitiativ' }
+                    ]
+                }
+            ],
+            mjukvaruutvecklare: [
+                {
+                    id: 'sit_1',
+                    fraga: 'Kl 14:30 tisdag - produktionen får kritiska fel. Vad gör du först?',
+                    alternativ: [
+                        { value: 'a', text: 'Kontaktar senior utvecklare för vägledning' },
+                        { value: 'b', text: 'Kollar senaste deployment och loggar' },
+                        { value: 'c', text: 'Rullar tillbaka till föregående version' },
+                        { value: 'd', text: 'Går direkt till loggarna för rotorsaksanalys' }
+                    ]
+                },
+                {
+                    id: 'sit_2',
+                    fraga: 'Efter att du fixat en bugg, vad gör du?',
+                    alternativ: [
+                        { value: 'a', text: 'Stänger ärendet och går vidare' },
+                        { value: 'b', text: 'Dokumenterar fix och skriver tester' },
+                        { value: 'c', text: 'Kollar om liknande buggar finns på andra ställen' },
+                        { value: 'd', text: 'Analyserar om det indikerar designproblem' }
+                    ]
+                },
+                {
+                    id: 'sit_3',
+                    fraga: 'Nytt ramverk släpps som kan förbättra er stack. Vad gör du?',
+                    alternativ: [
+                        { value: 'a', text: 'Noterar det för framtida referens' },
+                        { value: 'b', text: 'Läser dokumentation och informerar teamet' },
+                        { value: 'c', text: 'Sätter upp proof-of-concept i labbmiljö' },
+                        { value: 'd', text: 'Utvärderar strategisk påverkan på arkitekturen' }
+                    ]
+                },
+                {
+                    id: 'sit_4',
+                    fraga: 'Kollega frågar om tekniskt område du inte är säker på. Vad gör du?',
+                    alternativ: [
+                        { value: 'a', text: 'Hänvisar till senior utvecklare' },
+                        { value: 'b', text: 'Lovar läsa på och återkomma' },
+                        { value: 'c', text: 'Felsöker tillsammans med kollegan' },
+                        { value: 'd', text: 'Koordinerar med flera experter om behövs' }
+                    ]
+                },
+                {
+                    id: 'sit_5',
+                    fraga: 'Hur ofta har du schemalagda avstämningar med din chef?',
+                    alternativ: [
+                        { value: '1', text: 'Flera gånger per vecka eller dagligen' },
+                        { value: '2', text: 'En gång per vecka' },
+                        { value: '3', text: 'Varannan vecka eller mer sällan' },
+                        { value: '4', text: 'Vid behov, inget fast schema' }
+                    ]
+                },
+                {
+                    id: 'sit_6',
+                    fraga: 'När du kommer på morgonen, vad gör du först?',
+                    alternativ: [
+                        { value: 'a', text: 'Kollar build status och CI/CD' },
+                        { value: 'b', text: 'Kollar Jira/backlog från PO' },
+                        { value: 'c', text: 'Går igenom pull requests och planerar sprinten' },
+                        { value: 'd', text: 'Fortsätter på arkitekturdesign eller teknisk skuld' }
+                    ]
+                }
+            ],
+            natverkstekniker: [
+                {
+                    id: 'sit_1',
+                    fraga: 'Kl 09:15 måndag - hela byggnaden tappar nätverksaccess. Vad gör du?',
+                    alternativ: [
+                        { value: 'a', text: 'Kontaktar senior nätverkstekniker omedelbart' },
+                        { value: 'b', text: 'Kollar om det finns känt problem eller planerat underhåll' },
+                        { value: 'c', text: 'Startar om core switch för snabbaste lösningen' },
+                        { value: 'd', text: 'Går till monitoring och loggar för att diagnostisera' }
+                    ]
+                },
+                {
+                    id: 'sit_2',
+                    fraga: 'Efter att du löst ett nätverksproblem, vad gör du?',
+                    alternativ: [
+                        { value: 'a', text: 'Stänger ärendet och går vidare' },
+                        { value: 'b', text: 'Dokumenterar lösningen noggrant' },
+                        { value: 'c', text: 'Kollar om samma problem finns på andra switchar' },
+                        { value: 'd', text: 'Analyserar om det kräver infrastrukturåtgärd' }
+                    ]
+                },
+                {
+                    id: 'sit_3',
+                    fraga: 'Ny WiFi 7-standard släpps. Hur hanterar du det?',
+                    alternativ: [
+                        { value: 'a', text: 'Noterar informationen' },
+                        { value: 'b', text: 'Läser specifikationer och delar med teamet' },
+                        { value: 'c', text: 'Utvärderar om det löser nuvarande begränsningar' },
+                        { value: 'd', text: 'Planerar strategisk migrering av trådlöst nät' }
+                    ]
+                },
+                {
+                    id: 'sit_4',
+                    fraga: 'Kollega frågar om routing-problem du inte stött på. Vad gör du?',
+                    alternativ: [
+                        { value: 'a', text: 'Hänvisar till senior nätverkstekniker' },
+                        { value: 'b', text: 'Kollar dokumentation och återkommer' },
+                        { value: 'c', text: 'Felsöker tillsammans via CLI och loggar' },
+                        { value: 'd', text: 'Samlar in data från flera enheter för helhetsbild' }
+                    ]
+                },
+                {
+                    id: 'sit_5',
+                    fraga: 'Hur ofta har du schemalagda avstämningar med din chef?',
+                    alternativ: [
+                        { value: '1', text: 'Flera gånger per vecka eller dagligen' },
+                        { value: '2', text: 'En gång per vecka' },
+                        { value: '3', text: 'Varannan vecka eller mer sällan' },
+                        { value: '4', text: 'Vid behov, inget fast schema' }
+                    ]
+                },
+                {
+                    id: 'sit_6',
+                    fraga: 'När du kommer på morgonen, vad gör du först?',
+                    alternativ: [
+                        { value: 'a', text: 'Kollar nätverksmonitoring och alerter' },
+                        { value: 'b', text: 'Kollar min uppgiftslista från chef' },
+                        { value: 'c', text: 'Går igenom incidenter och planerar ändringar' },
+                        { value: 'd', text: 'Arbetar på nätverksutvecklingsprojekt' }
+                    ]
+                }
+            ],
+            it_projektledare: [
+                {
+                    id: 'sit_1',
+                    fraga: 'Mitt i projektet upptäcks en kritisk försening. Vad gör du?',
+                    alternativ: [
+                        { value: 'a', text: 'Eskalerar till min chef omedelbart' },
+                        { value: 'b', text: 'Informerar projektägare och ber om vägledning' },
+                        { value: 'c', text: 'Omplanerar resurserna och justerar tidsplan' },
+                        { value: 'd', text: 'Analyserar påverkan på andra projekt i portföljen' }
+                    ]
+                },
+                {
+                    id: 'sit_2',
+                    fraga: 'Efter projektavslut, vad gör du?',
+                    alternativ: [
+                        { value: 'a', text: 'Stänger projektet och går vidare' },
+                        { value: 'b', text: 'Dokumenterar och samlar lessons learned' },
+                        { value: 'c', text: 'Följer upp effektmål med kunden' },
+                        { value: 'd', text: 'Analyserar för att förbättra projektmetodik' }
+                    ]
+                },
+                {
+                    id: 'sit_3',
+                    fraga: 'Ny projektmetodik lanseras. Hur hanterar du det?',
+                    alternativ: [
+                        { value: 'a', text: 'Inväntar utbildning från organisationen' },
+                        { value: 'b', text: 'Läser om metodiken och informerar teamet' },
+                        { value: 'c', text: 'Utvärderar hur den passar våra projekt' },
+                        { value: 'd', text: 'Pilot-testar och anpassar för organisationen' }
+                    ]
+                },
+                {
+                    id: 'sit_4',
+                    fraga: 'Intressent vill ändra scope mitt i projektet. Vad gör du?',
+                    alternativ: [
+                        { value: 'a', text: 'Hänvisar till projektägare för beslut' },
+                        { value: 'b', text: 'Dokumenterar önskemål och eskalerar' },
+                        { value: 'c', text: 'Utvärderar påverkan på tid/budget/kvalitet' },
+                        { value: 'd', text: 'Leder förhandling mellan stakeholders' }
+                    ]
+                },
+                {
+                    id: 'sit_5',
+                    fraga: 'Hur ofta har du schemalagda avstämningar med din chef?',
+                    alternativ: [
+                        { value: '1', text: 'Flera gånger per vecka eller dagligen' },
+                        { value: '2', text: 'En gång per vecka' },
+                        { value: '3', text: 'Varannan vecka eller mer sällan' },
+                        { value: '4', text: 'Vid behov, inget fast schema' }
+                    ]
+                },
+                {
+                    id: 'sit_6',
+                    fraga: 'När du kommer på morgonen, vad gör du först?',
+                    alternativ: [
+                        { value: 'a', text: 'Kollar projektstatus och blockers' },
+                        { value: 'b', text: 'Kollar min dagordning från chef' },
+                        { value: 'c', text: 'Synkar med projektteam och prioriterar' },
+                        { value: 'd', text: 'Arbetar strategiskt med portföljoptimering' }
+                    ]
+                }
+            ],
+            supporttekniker: [
+                {
+                    id: 'sit_1',
+                    fraga: 'Kl 08:00 måndag - massinflöde av identiska ärenden. Vad gör du?',
+                    alternativ: [
+                        { value: 'a', text: 'Börjar jobba ärende för ärende' },
+                        { value: 'b', text: 'Informerar teamet om problemet' },
+                        { value: 'c', text: 'Kollar om det är systemfel och eskalerar' },
+                        { value: 'd', text: 'Identifierar grundorsak och skapar workaround' }
+                    ]
+                },
+                {
+                    id: 'sit_2',
+                    fraga: 'Efter att du löst ett supportärende, vad gör du?',
+                    alternativ: [
+                        { value: 'a', text: 'Stänger ärendet och går till nästa' },
+                        { value: 'b', text: 'Dokumenterar lösningen i ärendet' },
+                        { value: 'c', text: 'Skapar/uppdaterar KB-artikel' },
+                        { value: 'd', text: 'Kollar om det är återkommande som behöver åtgärdas' }
+                    ]
+                },
+                {
+                    id: 'sit_3',
+                    fraga: 'Nytt verktyg införs som användarna måste lära sig. Vad gör du?',
+                    alternativ: [
+                        { value: 'a', text: 'Inväntar instruktioner från chef' },
+                        { value: 'b', text: 'Lär mig verktyget för att kunna supportera' },
+                        { value: 'c', text: 'Förbereder support-material och vanliga frågor' },
+                        { value: 'd', text: 'Planerar utbildningsinsatser för användare' }
+                    ]
+                },
+                {
+                    id: 'sit_4',
+                    fraga: 'Användare ringer med problem du aldrig sett. Vad gör du?',
+                    alternativ: [
+                        { value: 'a', text: 'Eskalerar till 2:a linjen direkt' },
+                        { value: 'b', text: 'Lovar ringa tillbaka efter research' },
+                        { value: 'c', text: 'Felsöker tillsammans med användaren' },
+                        { value: 'd', text: 'Samlar in info och koordinerar med systemägare' }
+                    ]
+                },
+                {
+                    id: 'sit_5',
+                    fraga: 'Hur ofta har du schemalagda avstämningar med din chef?',
+                    alternativ: [
+                        { value: '1', text: 'Flera gånger per vecka eller dagligen' },
+                        { value: '2', text: 'En gång per vecka' },
+                        { value: '3', text: 'Varannan vecka eller mer sällan' },
+                        { value: '4', text: 'Vid behov, inget fast schema' }
+                    ]
+                },
+                {
+                    id: 'sit_6',
+                    fraga: 'När du kommer på morgonen, vad gör du först?',
+                    alternativ: [
+                        { value: 'a', text: 'Kollar ärendekön' },
+                        { value: 'b', text: 'Kollar uppgiftslista från chef' },
+                        { value: 'c', text: 'Går igenom prioriterade ärenden och incidenter' },
+                        { value: 'd', text: 'Arbetar på förbättringsprojekt för supporten' }
+                    ]
+                }
+            ],
+            systemadministrator: [
+                {
+                    id: 'sit_1',
+                    fraga: 'Kl 03:00 natt - kritiskt system går ner. Vad gör du?',
+                    alternativ: [
+                        { value: 'a', text: 'Ringer jouren för vägledning' },
+                        { value: 'b', text: 'Kollar monitoring och startar enligt rutin' },
+                        { value: 'c', text: 'Startar om tjänsten snabbt för tillgänglighet' },
+                        { value: 'd', text: 'Analyserar loggar för rotorsak innan restart' }
+                    ]
+                },
+                {
+                    id: 'sit_2',
+                    fraga: 'Efter att du fixat ett systemfel, vad gör du?',
+                    alternativ: [
+                        { value: 'a', text: 'Stänger ärendet och går vidare' },
+                        { value: 'b', text: 'Dokumenterar lösningen noggrant' },
+                        { value: 'c', text: 'Kollar om samma sårbarhet finns på andra system' },
+                        { value: 'd', text: 'Analyserar om infrastrukturen behöver förstärkas' }
+                    ]
+                },
+                {
+                    id: 'sit_3',
+                    fraga: 'Ny säkerhetspatch släpps för era servrar. Vad gör du?',
+                    alternativ: [
+                        { value: 'a', text: 'Inväntar instruktioner från chef' },
+                        { value: 'b', text: 'Läser release notes och informerar teamet' },
+                        { value: 'c', text: 'Testar i labb och planerar utrullning' },
+                        { value: 'd', text: 'Utvärderar risk och prioriterar kritiska system' }
+                    ]
+                },
+                {
+                    id: 'sit_4',
+                    fraga: 'Kollega frågar om konfiguration du inte är bekant med. Vad gör du?',
+                    alternativ: [
+                        { value: 'a', text: 'Hänvisar till senior systemadministratör' },
+                        { value: 'b', text: 'Kollar dokumentation och återkommer' },
+                        { value: 'c', text: 'Testar i labb och hjälper kollegan' },
+                        { value: 'd', text: 'Samlar kompetens från flera håll om komplext' }
+                    ]
+                },
+                {
+                    id: 'sit_5',
+                    fraga: 'Hur ofta har du schemalagda avstämningar med din chef?',
+                    alternativ: [
+                        { value: '1', text: 'Flera gånger per vecka eller dagligen' },
+                        { value: '2', text: 'En gång per vecka' },
+                        { value: '3', text: 'Varannan vecka eller mer sällan' },
+                        { value: '4', text: 'Vid behov, inget fast schema' }
+                    ]
+                },
+                {
+                    id: 'sit_6',
+                    fraga: 'När du kommer på morgonen, vad gör du först?',
+                    alternativ: [
+                        { value: 'a', text: 'Kollar systemmonitoring och backup-status' },
+                        { value: 'b', text: 'Kollar min uppgiftslista från chef' },
+                        { value: 'c', text: 'Går igenom alerts och planerar förändringar' },
+                        { value: 'd', text: 'Arbetar på infrastrukturutveckling' }
+                    ]
+                }
+            ],
+            systemspecialist: [
+                {
+                    id: 'sit_1',
+                    fraga: 'Kl 14:30 tisdag - ditt system går ner helt. Vad är din första reaktion?',
+                    alternativ: [
+                        { value: 'a', text: 'Kollar snabbt om det finns känd incident eller planned maintenance' },
+                        { value: 'b', text: 'Startar om tjänsten för att se om det är tillfälligt' },
+                        { value: 'c', text: 'Kontaktar leverantörssupport omedelbart' },
+                        { value: 'd', text: 'Går direkt till loggarna för att se vad som triggrade nedgången' }
+                    ]
+                },
+                {
+                    id: 'sit_2',
+                    fraga: 'Du löste just ett komplext problem. Vad känns viktigast att göra nu?',
+                    alternativ: [
+                        { value: 'a', text: 'Stänga ärendet så jag kan gå vidare till nästa' },
+                        { value: 'b', text: 'Berätta för min chef/teamet hur jag löste det' },
+                        { value: 'c', text: 'Kolla om det finns relaterade öppna ärenden jag nu kan lösa' },
+                        { value: 'd', text: 'Dokumentera lösningen så andra kan hitta den' }
+                    ]
+                },
+                {
+                    id: 'sit_3',
+                    fraga: 'Leverantören meddelar att en ny version släpps om 3 månader. Vad gör du?',
+                    alternativ: [
+                        { value: 'a', text: 'Noterar det och väntar på mer info närmare lansering' },
+                        { value: 'b', text: 'Läser igenom dokumentationen för att se vad som är nytt' },
+                        { value: 'c', text: 'Kollar vilka av våra nuvarande problem som kanske löses i nya versionen' },
+                        { value: 'd', text: 'Sätter upp ett testlab för att utvärdera nya funktioner' }
+                    ]
+                },
+                {
+                    id: 'sit_4',
+                    fraga: 'En kollega från ett annat team frågar om ett problem kan vara relaterat till ditt system. Du är inte säker. Hur svarar du?',
+                    alternativ: [
+                        { value: 'a', text: '"Jag är inte säker, fråga vår senior specialist"' },
+                        { value: 'b', text: '"Låt mig kolla och återkomma"' },
+                        { value: 'c', text: '"Beskriv problemet mer, så kan vi felsöka tillsammans"' },
+                        { value: 'd', text: '"Kan du skicka loggarna så tittar jag"' }
+                    ]
+                },
+                {
+                    id: 'sit_5',
+                    fraga: 'Hur ofta har du schemalagda avstämningsmöten med din närmaste chef?',
+                    alternativ: [
+                        { value: '1', text: 'Flera gånger per vecka eller dagligen' },
+                        { value: '2', text: 'En gång per vecka' },
+                        { value: '3', text: 'Varannan vecka eller mer sällan' },
+                        { value: '4', text: 'Vid behov, inget fast schema' }
+                    ]
+                },
+                {
+                    id: 'sit_6',
+                    fraga: 'När du kommer till jobbet på morgonen, vad gör du först?',
+                    alternativ: [
+                        { value: 'a', text: 'Kollar vad som hänt under natten i övervakningen' },
+                        { value: 'b', text: 'Kollar min uppgiftslista från chef/projektledare' },
+                        { value: 'c', text: 'Går igenom mina mejl och prioriterar dagens arbete' },
+                        { value: 'd', text: 'Fortsätter där jag slutade igår på mitt långsiktiga projekt' }
+                    ]
+                }
+            ]
+        };
+
+        // ═══════════════════════════════════════════════════════════
+        // EVENT HANDLERS
+        // ═══════════════════════════════════════════════════════════
+
+        const form = document.getElementById('assessmentForm');
+        const befattningSelect = document.getElementById('befattningSelect');
+        const progressFill = document.getElementById('progressFill');
+
+        // När användaren väljer befattning
+        befattningSelect.addEventListener('change', function() {
+            const befattning = this.value;
+            
+            if (!befattning) return;
+
+            // Visa alla sektioner
+            document.getElementById('grunddataSection').classList.remove('hidden');
+            document.getElementById('gemensannaSection').classList.remove('hidden');
+            document.getElementById('specifikSection').classList.remove('hidden');
+            document.getElementById('situationerSection').classList.remove('hidden');
+            document.getElementById('submitBtn').classList.remove('hidden');
+
+            // Ladda innehåll
+            laddaBefattningsFraga(befattning);
+            laddaGemensannaFragor();
+            laddaSpecifikaFragor(befattning);
+            laddaSituationer(befattning);
+
+            // Scroll till grunddata
+            document.getElementById('grunddataSection').scrollIntoView({ behavior: 'smooth' });
+        });
+
+        function laddaBefattningsFraga(befattning) {
+            const info = BEFATTNINGAR[befattning];
+            const container = document.getElementById('befattningsFraga');
+            
+            container.innerHTML = `
+                <div class="question-text">${info.fraga}</div>
+                <input type="text" name="befattning_detail" placeholder="${info.placeholder}" required>
+            `;
+        }
+
+        function laddaGemensannaFragor() {
+            const tbody = document.getElementById('gemensamma_tbody');
+            
+            tbody.innerHTML = GEMENSAMMA_FRAGOR.map(q => {
+                if (q.inverterad) {
+                    return `
+                        <tr class="freq-row">
+                            <td class="freq-label">${q.text}</td>
+                            <td class="freq-cell"><input type="radio" name="${q.id}" value="5" required></td>
+                            <td class="freq-cell"><input type="radio" name="${q.id}" value="4"></td>
+                            <td class="freq-cell"><input type="radio" name="${q.id}" value="3"></td>
+                            <td class="freq-cell"><input type="radio" name="${q.id}" value="2"></td>
+                            <td class="freq-cell"><input type="radio" name="${q.id}" value="1"></td>
+                        </tr>
+                    `;
+                } else {
+                    return `
+                        <tr class="freq-row">
+                            <td class="freq-label">${q.text}</td>
+                            <td class="freq-cell"><input type="radio" name="${q.id}" value="1" required></td>
+                            <td class="freq-cell"><input type="radio" name="${q.id}" value="2"></td>
+                            <td class="freq-cell"><input type="radio" name="${q.id}" value="3"></td>
+                            <td class="freq-cell"><input type="radio" name="${q.id}" value="4"></td>
+                            <td class="freq-cell"><input type="radio" name="${q.id}" value="5"></td>
+                        </tr>
+                    `;
+                }
+            }).join('');
+
+            // Add change listeners for progress
+            tbody.querySelectorAll('input').forEach(input => {
+                input.addEventListener('change', uppdateraProgress);
+            });
+        }
+
+        function laddaSpecifikaFragor(befattning) {
+            const tbody = document.getElementById('specifik_tbody');
+            const fragor = SPECIFIKA_FRAGOR[befattning];
+            
+            tbody.innerHTML = fragor.map(q => `
+                <tr class="freq-row">
+                    <td class="freq-label">${q.text}</td>
+                    <td class="freq-cell"><input type="radio" name="${q.id}" value="1" required></td>
+                    <td class="freq-cell"><input type="radio" name="${q.id}" value="2"></td>
+                    <td class="freq-cell"><input type="radio" name="${q.id}" value="3"></td>
+                    <td class="freq-cell"><input type="radio" name="${q.id}" value="4"></td>
+                    <td class="freq-cell"><input type="radio" name="${q.id}" value="5"></td>
+                </tr>
+            `).join('');
+
+            // Add change listeners for progress
+            tbody.querySelectorAll('input').forEach(input => {
+                input.addEventListener('change', uppdateraProgress);
+            });
+        }
+
+        function laddaSituationer(befattning) {
+            const container = document.getElementById('situationer_container');
+            const situationer = SITUATIONER[befattning];
+            
+            container.innerHTML = situationer.map(sit => `
+                <div class="question">
+                    <div class="question-text">${sit.fraga}</div>
+                    ${sit.alternativ.map(alt => `
+                        <label class="option">
+                            <input type="radio" name="${sit.id}" value="${alt.value}" required>
+                            <span>${alt.text}</span>
+                        </label>
+                    `).join('')}
+                </div>
+            `).join('');
+
+            // Add change listeners for progress
+            container.querySelectorAll('input').forEach(input => {
+                input.addEventListener('change', uppdateraProgress);
+            });
+        }
+
+        function uppdateraProgress() {
+            const formData = new FormData(form);
+            const radioGroups = new Set();
+            
+            // Samla alla radio-grupper
+            form.querySelectorAll('input[type="radio"]').forEach(r => radioGroups.add(r.name));
+            
+            let completed = 0;
+            let total = radioGroups.size;
+
+            // Räkna ifyllda radio-grupper
+            radioGroups.forEach(group => {
+                if (form.querySelector(`input[name="${group}"]:checked`)) {
+                    completed++;
+                }
+            });
+
+            // Lägg till required text/number inputs
+            const requiredInputs = form.querySelectorAll('input[required][type="text"], input[required][type="number"]');
+            total += requiredInputs.length;
+            requiredInputs.forEach(input => {
+                if (input.value.trim() !== '') completed++;
+            });
+
+            const percentage = Math.round((completed / total) * 100);
+            progressFill.style.width = percentage + '%';
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        // FORM SUBMISSION
+        // ═══════════════════════════════════════════════════════════
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const befattning = document.getElementById('befattningSelect').value;
+            const formData = new FormData(form);
+            const answers = {};
+            
+            // Samla alla svar
+            for (let [key, value] of formData.entries()) {
+                answers[key] = value;
+            }
+
+            // Samla checkboxes
+            answers.cert_basic = form.querySelector('[name="cert_basic"]').checked;
+            answers.cert_advanced = form.querySelector('[name="cert_advanced"]').checked;
+            answers.cert_expert = form.querySelector('[name="cert_expert"]').checked;
+            answers.cert_selfstudy = form.querySelector('[name="cert_selfstudy"]').checked;
+            answers.cert_internal = form.querySelector('[name="cert_internal"]').checked;
+
+            // Beräkna nivå
+            const result = beraknaNiva(befattning, answers);
+            
+            // Visa resultat
+            visaResultat(befattning, result, answers);
+        });
+
+        function beraknaNiva(befattning, answers) {
+            const info = BEFATTNINGAR[befattning];
+            const breakdown = {
+                befattning: 1,
+                kunskap: 1,
+                erfarenhet: 1,
+                ledningsbehov: 1
+            };
+
+            // ═══════════════════════════════════════════════════════
+            // KRITERIUM 1: ERFARENHET (samma för alla)
+            // ═══════════════════════════════════════════════════════
+            const years = parseFloat(answers.years_experience);
+            if (years >= 8) breakdown.erfarenhet = 4;
+            else if (years >= 4) breakdown.erfarenhet = 3;
+            else if (years >= 2) breakdown.erfarenhet = 2;
+            else breakdown.erfarenhet = 1;
+
+            // ═══════════════════════════════════════════════════════
+            // KRITERIUM 2: KUNSKAP (samma logik för alla)
+            // ═══════════════════════════════════════════════════════
+            if (answers.cert_expert || (answers.cert_advanced && answers.cert_selfstudy)) {
+                breakdown.kunskap = 4;
+            } else if (answers.cert_advanced || (answers.cert_basic && answers.cert_selfstudy && answers.cert_internal)) {
+                breakdown.kunskap = 3;
+            } else if (answers.cert_basic || answers.cert_internal || answers.cert_selfstudy) {
+                breakdown.kunskap = 2;
+            } else {
+                breakdown.kunskap = 1;
+            }
+
+            // ═══════════════════════════════════════════════════════
+            // KRITERIUM 3: BEFATTNING (från frekvenser)
+            // ═══════════════════════════════════════════════════════
+            
+            // Samla gemensamma frekvenser
+            const gem = {};
+            GEMENSAMMA_FRAGOR.forEach(q => {
+                const val = parseInt(answers[q.id] || 3);
+                gem[q.id] = q.inverterad ? (6 - val) : val;
+            });
+
+            // Beräkna profiler
+            const operational = (
+                parseInt(answers.gem_2 || 3) +
+                parseInt(answers.gem_5 || 3)
+            ) / 2;
+
+            const autonomous = (
+                gem.gem_3 + // Inverterad: stämmer av med chef
+                gem.gem_7 + // Inverterad: chef ser över
+                gem.gem_9 + // Inverterad: hänvisar vidare
+                gem.gem_14 + // Inverterad: diskuterar med chef
+                gem.gem_15 + // Inverterad: får info från chef
+                parseInt(answers.gem_4 || 1) + // Kontakt med andra team
+                parseInt(answers.gem_8 || 1) + // Problem utan färdig lösning
+                parseInt(answers.gem_12 || 1)  // Uppgifter som mål
+            ) / 8;
+
+            const expert = (
+                parseInt(answers.gem_1 || 1) + // Ber om input
+                parseInt(answers.gem_6 || 1) + // Skriver dokumentation
+                parseInt(answers.gem_10 || 1)  // Hjälper andra lära sig
+            ) / 3;
+
+            const strategic = (
+                parseInt(answers.gem_11 || 1) + // Diskussioner om framtid
+                parseInt(answers.gem_13 || 1)   // Leder projekt
+            ) / 2;
+
+            // Bestäm befattningsnivå
+            if (strategic >= 3.5 && expert >= 3.5 && autonomous >= 3) {
+                breakdown.befattning = 4;
+            } else if (expert >= 3.5 && autonomous >= 3 && operational <= 3) {
+                breakdown.befattning = 3;
+            } else if (autonomous >= 2.5 && operational <= 3) {
+                breakdown.befattning = 2;
+            } else {
+                breakdown.befattning = 1;
+            }
+
+            // ═══════════════════════════════════════════════════════
+            // KRITERIUM 4: LEDNINGSBEHOV (från situationer)
+            // ═══════════════════════════════════════════════════════
+            
+            const managerFreq = parseInt(answers.sit_5 || 2);
+            
+            let dailyStart = 1;
+            if (answers.sit_6 === 'd') dailyStart = 4;
+            else if (answers.sit_6 === 'c') dailyStart = 3;
+            else if (answers.sit_6 === 'b') dailyStart = 1;
+            else dailyStart = 2;
+
+            const autoScore = (managerFreq + dailyStart + autonomous) / 3;
+            
+            if (autoScore >= 3.5) breakdown.ledningsbehov = 4;
+            else if (autoScore >= 2.8) breakdown.ledningsbehov = 3;
+            else if (autoScore >= 2) breakdown.ledningsbehov = 2;
+            else breakdown.ledningsbehov = 1;
+
+            // ═══════════════════════════════════════════════════════
+            // APPLICERA TILLÅTNA NIVÅER
+            // ═══════════════════════════════════════════════════════
+            const maxNiva = Math.max(...info.nivaer);
+            breakdown.befattning = Math.min(breakdown.befattning, maxNiva);
+            breakdown.kunskap = Math.min(breakdown.kunskap, maxNiva);
+            breakdown.erfarenhet = Math.min(breakdown.erfarenhet, maxNiva);
+            breakdown.ledningsbehov = Math.min(breakdown.ledningsbehov, maxNiva);
+
+            // ═══════════════════════════════════════════════════════
+            // FLASKHALSPRINCIPEN
+            // ═══════════════════════════════════════════════════════
+            let finalLevel = Math.min(
+                breakdown.befattning,
+                breakdown.kunskap,
+                breakdown.erfarenhet,
+                breakdown.ledningsbehov
+            );
+
+            // Säkerställ att nivån finns i tillgängliga
+            if (!info.nivaer.includes(finalLevel)) {
+                finalLevel = info.nivaer.reduce((prev, curr) => 
+                    (curr < finalLevel && curr > prev) ? curr : prev
+                , Math.min(...info.nivaer));
+            }
+
+            // Identifiera flaskhalsar
+            const bottlenecks = [];
+            if (breakdown.befattning === finalLevel) bottlenecks.push('Befattningsbeskrivning');
+            if (breakdown.kunskap === finalLevel) bottlenecks.push('Kunskapskrav');
+            if (breakdown.erfarenhet === finalLevel) bottlenecks.push('Erfarenhetskrav');
+            if (breakdown.ledningsbehov === finalLevel) bottlenecks.push('Ledningsbehov');
+
+            // Beräkna score
+            const score = Math.round(
+                25 * (breakdown.befattning / 4) +
+                25 * (breakdown.kunskap / 4) +
+                25 * (breakdown.erfarenhet / 4) +
+                25 * (breakdown.ledningsbehov / 4)
+            );
+
+            return {
+                level: finalLevel,
+                breakdown,
+                bottlenecks,
+                score
+            };
+        }
+
+        function visaResultat(befattning, result, answers) {
+            const info = BEFATTNINGAR[befattning];
+            
+            const nivaInfo = {
+                1: { titel: 'NIVÅ 1 - Operativ', beskrivning: 'Grundläggande uppgifter under övervakning' },
+                2: { titel: 'NIVÅ 2 - Operativ-Taktisk', beskrivning: 'Självständigt arbete med rådgivning' },
+                3: { titel: 'NIVÅ 3 - Operativ-Taktisk-Strategisk', beskrivning: 'Teknisk expert och mentor' },
+                4: { titel: 'NIVÅ 4 - Strategisk', beskrivning: 'Driver strategisk utveckling och innovation' }
+            };
+
+            const niva = nivaInfo[result.level];
+
+            const html = `
+                <div class="score-circle">
+                    <div class="score-number">${result.score}</div>
+                    <div class="score-total">/100</div>
+                </div>
+
+                <div class="result-level">${niva.titel}</div>
+                <div class="result-desc">${info.namn} - ${niva.beskrivning}</div>
+
+                <div class="result-breakdown">
+                    <h3 style="margin-bottom: 30px; font-size: 1.8em;">📊 Bedömning enligt regelverkets 4 kriterier</h3>
+                    
+                    <div class="breakdown-item">
+                        <div class="breakdown-label">
+                            <strong>1. Befattningsbeskrivning</strong>
+                            <span>Vad du faktiskt gör i din vardag</span>
+                        </div>
+                        <div class="breakdown-value">Nivå ${result.breakdown.befattning}</div>
+                    </div>
+                    
+                    <div class="breakdown-item">
+                        <div class="breakdown-label">
+                            <strong>2. Kunskapskrav</strong>
+                            <span>Certifieringar eller motsvarande kompetens</span>
+                        </div>
+                        <div class="breakdown-value">Nivå ${result.breakdown.kunskap}</div>
+                    </div>
+                    
+                    <div class="breakdown-item">
+                        <div class="breakdown-label">
+                            <strong>3. Erfarenhetskrav</strong>
+                            <span>År inom området (${answers.years_experience} år)</span>
+                        </div>
+                        <div class="breakdown-value">Nivå ${result.breakdown.erfarenhet}</div>
+                    </div>
+                    
+                    <div class="breakdown-item">
+                        <div class="breakdown-label">
+                            <strong>4. Ledningsbehov</strong>
+                            <span>Grad av självständighet</span>
+                        </div>
+                        <div class="breakdown-value">Nivå ${result.breakdown.ledningsbehov}</div>
+                    </div>
+
+                    <div class="flaskhals-box">
+                        <strong>🔒 Flaskhalsprincipen tillämpas</strong>
+                        <div style="font-size: 1.1em; line-height: 1.8; margin-top: 10px;">
+                            Din bedömning: <strong style="font-size: 1.3em;">${result.breakdown.befattning}-${result.breakdown.kunskap}-${result.breakdown.erfarenhet}-${result.breakdown.ledningsbehov}</strong>
+                            <br><br>
+                            <strong>= NIVÅ ${result.level}</strong>
+                            <br><br>
+                            ${result.bottlenecks.length > 0 ? 
+                                `Begränsande faktor${result.bottlenecks.length > 1 ? 'er' : ''}: <strong>${result.bottlenecks.join(', ')}</strong>` 
+                                : 'Alla kriterier är balanserade'}
+                            <br><br>
+                            <em>Tillgängliga nivåer för ${info.namn}: ${info.nivaer.join(', ')}</em>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="email-btn" onclick="genereraEmailRapport()">
+                    � Visa detaljerad rapport
+                </button>
+                <button class="email-btn" onclick="skickaEmailRapport()" style="margin-left: 10px;">
+                    📧 Skicka per e-post
+                </button>
+            `;
+
+            const container = document.getElementById('resultContainer');
+            container.innerHTML = html;
+            container.classList.add('show');
+            container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+            // Spara data för email-rapport
+            window.currentAssessment = { befattning, result, answers };
+        }
+
+        function genereraEmailRapport() {
+            const { befattning, result, answers } = window.currentAssessment;
+            const info = BEFATTNINGAR[befattning];
+            
+            const nivaInfo = {
+                1: { titel: 'NIVÅ 1 - Operativ', beskrivning: 'Grundläggande uppgifter under övervakning' },
+                2: { titel: 'NIVÅ 2 - Operativ-Taktisk', beskrivning: 'Självständigt arbete med rådgivning' },
+                3: { titel: 'NIVÅ 3 - Operativ-Taktisk-Strategisk', beskrivning: 'Teknisk expert och mentor' },
+                4: { titel: 'NIVÅ 4 - Strategisk', beskrivning: 'Driver strategisk utveckling och innovation' }
+            };
+
+            const niva = nivaInfo[result.level];
+            const datum = new Date().toLocaleDateString('sv-SE', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+
+            // Bygg email-rapport
+            let html = `
+                <div class="email-header">
+                    <h1>Kompetensbedömning IT-service</h1>
+                    <div class="date">${datum}</div>
+                </div>
+
+                <!-- GRUNDDATA -->
+                <div class="email-section">
+                    <h2>📋 Grunddata</h2>
+                    <div class="email-info-grid">
+                        <div class="email-info-label">Befattning:</div>
+                        <div class="email-info-value">${info.namn}</div>
+                        
+                        <div class="email-info-label">Ansvarsområde:</div>
+                        <div class="email-info-value">${answers.befattning_detail || 'Ej angivet'}</div>
+                        
+                        <div class="email-info-label">Erfarenhet:</div>
+                        <div class="email-info-value">${answers.years_experience} år</div>
+                        
+                        <div class="email-info-label">Kompetens:</div>
+                        <div class="email-info-value">
+                            ${answers.cert_expert ? '✓ Expertkompetens' : ''}
+                            ${answers.cert_advanced ? '✓ Fördjupad kompetens' : ''}
+                            ${answers.cert_basic ? '✓ Grundläggande kompetens' : ''}
+                            ${answers.cert_selfstudy ? '✓ Omfattande självstudier' : ''}
+                            ${answers.cert_internal ? '✓ Intern utbildning' : ''}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RESULTAT -->
+                <div class="email-section">
+                    <h2>🎯 Bedömningsresultat</h2>
+                    <div class="email-result-box">
+                        <div class="email-result-level">${niva.titel}</div>
+                        <div class="email-result-desc">${info.namn} - ${niva.beskrivning}</div>
+                        
+                        <div class="email-breakdown">
+                            <div class="email-breakdown-item">
+                                <div>
+                                    <strong>1. Befattningsbeskrivning</strong><br>
+                                    <span style="opacity: 0.85;">Vad du faktiskt gör i din vardag</span>
+                                </div>
+                                <div style="font-size: 2em; font-weight: 700;">Nivå ${result.breakdown.befattning}</div>
+                            </div>
+                            
+                            <div class="email-breakdown-item">
+                                <div>
+                                    <strong>2. Kunskapskrav</strong><br>
+                                    <span style="opacity: 0.85;">Certifieringar eller motsvarande kompetens</span>
+                                </div>
+                                <div style="font-size: 2em; font-weight: 700;">Nivå ${result.breakdown.kunskap}</div>
+                            </div>
+                            
+                            <div class="email-breakdown-item">
+                                <div>
+                                    <strong>3. Erfarenhetskrav</strong><br>
+                                    <span style="opacity: 0.85;">År inom området (${answers.years_experience} år)</span>
+                                </div>
+                                <div style="font-size: 2em; font-weight: 700;">Nivå ${result.breakdown.erfarenhet}</div>
+                            </div>
+                            
+                            <div class="email-breakdown-item">
+                                <div>
+                                    <strong>4. Ledningsbehov</strong><br>
+                                    <span style="opacity: 0.85;">Grad av självständighet</span>
+                                </div>
+                                <div style="font-size: 2em; font-weight: 700;">Nivå ${result.breakdown.ledningsbehov}</div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 25px; padding: 20px; background: rgba(255, 215, 0, 0.2); border-left: 5px solid #ffd700; border-radius: 8px;">
+                            <strong style="font-size: 1.2em;">🔒 Flaskhalsprincipen</strong>
+                            <div style="margin-top: 10px; font-size: 1.05em;">
+                                Bedömning: <strong>${result.breakdown.befattning}-${result.breakdown.kunskap}-${result.breakdown.erfarenhet}-${result.breakdown.ledningsbehov}</strong>
+                                = <strong>NIVÅ ${result.level}</strong>
+                                <br><br>
+                                ${result.bottlenecks.length > 0 ? 
+                                    `Begränsande faktor: <strong>${result.bottlenecks.join(', ')}</strong>` 
+                                    : 'Alla kriterier är balanserade'}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- GEMENSAMMA FRÅGOR -->
+                <div class="email-section">
+                    <h2>💼 Arbetsvecka - Gemensamma frågor</h2>
+                    <p style="margin-bottom: 15px; color: var(--text-light);">
+                        <strong>1</strong> = Aldrig | <strong>2</strong> = Några gånger/månad | 
+                        <strong>3</strong> = Varje vecka | <strong>4</strong> = Flera ggr/vecka | <strong>5</strong> = Dagligen
+                    </p>
+                    <table class="email-freq-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 70%;">Påstående</th>
+                                <th style="width: 30%;">Svar</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            // Gemensamma frågor
+            GEMENSAMMA_FRAGOR.forEach(q => {
+                const svar = answers[q.id];
+                html += `
+                    <tr>
+                        <td>${q.text}</td>
+                        <td style="font-weight: 700; color: var(--accent);">${svar || '-'}</td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- BEFATTNINGSSPECIFIKA FRÅGOR -->
+                <div class="email-section">
+                    <h2>🎯 Befattningsspecifika frågor</h2>
+                    <p style="margin-bottom: 15px; color: var(--text-light);">
+                        <strong>1</strong> = Aldrig | <strong>2</strong> = Några gånger/månad | 
+                        <strong>3</strong> = Varje vecka | <strong>4</strong> = Flera ggr/vecka | <strong>5</strong> = Dagligen
+                    </p>
+                    <table class="email-freq-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 70%;">Påstående</th>
+                                <th style="width: 30%;">Svar</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            // Befattningsspecifika frågor
+            const specifika = SPECIFIKA_FRAGOR[befattning];
+            specifika.forEach(q => {
+                const svar = answers[q.id];
+                html += `
+                    <tr>
+                        <td>${q.text}</td>
+                        <td style="font-weight: 700; color: var(--accent);">${svar || '-'}</td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- SITUATIONSFRÅGOR -->
+                <div class="email-section">
+                    <h2>🧩 Situationsfrågor</h2>
+            `;
+
+            // Situationsfrågor
+            const situationer = SITUATIONER[befattning];
+            situationer.forEach(sit => {
+                const svar = answers[sit.id];
+                const valtAlt = sit.alternativ.find(alt => alt.value === svar);
+                
+                html += `
+                    <div class="email-qa">
+                        <div class="email-q">${sit.fraga}</div>
+                        <div class="email-a">→ ${valtAlt ? valtAlt.text : 'Inget svar'}</div>
+                    </div>
+                `;
+            });
+
+            html += `
+                </div>
+
+                <!-- ACTIONS -->
+                <div class="email-actions">
+                    <button class="btn-print" onclick="window.print()">🖨️ Skriv ut / Spara som PDF</button>
+                    <button class="btn-close" onclick="stangEmailRapport()">✕ Stäng</button>
+                </div>
+            `;
+
+            // Visa email-rapport
+            document.getElementById('emailContent').innerHTML = html;
+            document.getElementById('emailReport').classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function stangEmailRapport() {
+            document.getElementById('emailReport').classList.remove('show');
+            document.body.style.overflow = 'auto';
+        }
+
+        // === USER INFO & EMAIL FUNCTIONALITY ===
+        let currentUser = null;
+
+        async function fetchUserInfo() {
+            try {
+                const response = await fetch('/.auth/me');
+                const data = await response.json();
+                
+                if (data.clientPrincipal) {
+                    currentUser = {
+                        name: data.clientPrincipal.userDetails,
+                        email: data.clientPrincipal.userDetails,
+                        userId: data.clientPrincipal.userId
+                    };
+                    
+                    // Visa användarinfo i header
+                    document.getElementById('userInfo').innerHTML = `
+                        <span style="opacity: 0.8;">Inloggad som:</span> <strong>${currentUser.name}</strong>
+                    `;
+                }
+            } catch (error) {
+                console.log('Kör lokalt utan auth');
+            }
+        }
+
+        function skickaEmailRapport() {
+            if (!window.currentAssessment) {
+                alert('Ingen bedömning att skicka!');
+                return;
+            }
+
+            // Fråga efter mottagare
+            const recipientEmail = prompt('Ange mottagarens e-postadress:', currentUser?.email || '');
+            if (!recipientEmail) return;
+
+            // Skapa textbaserad rapport för email
+            const { befattning, result, answers } = window.currentAssessment;
+            const info = BEFATTNINGAR[befattning];
+            
+            const nivaInfo = {
+                1: { titel: 'NIVÅ 1 - Operativ', beskrivning: 'Grundläggande uppgifter under övervakning' },
+                2: { titel: 'NIVÅ 2 - Operativ-Taktisk', beskrivning: 'Självständigt arbete med rådgivning' },
+                3: { titel: 'NIVÅ 3 - Operativ-Taktisk-Strategisk', beskrivning: 'Teknisk expert och mentor' },
+                4: { titel: 'NIVÅ 4 - Strategisk', beskrivning: 'Driver strategisk utveckling och innovation' }
+            };
+
+            const niva = nivaInfo[result.level];
+            const datum = new Date().toLocaleDateString('sv-SE');
+            
+            // Bygg email-innehåll som plain text
+            let emailBody = `KOMPETENSBEDÖMNING IT-SERVICE\n`;
+            emailBody += `${'='.repeat(50)}\n\n`;
+            emailBody += `Datum: ${datum}\n`;
+            if (currentUser) emailBody += `Användare: ${currentUser.name}\n`;
+            emailBody += `\n`;
+            emailBody += `GRUNDDATA\n`;
+            emailBody += `---------\n`;
+            emailBody += `Befattning: ${info.namn}\n`;
+            emailBody += `Erfarenhet: ${answers.years_experience} år\n`;
+            emailBody += `\n`;
+            emailBody += `RESULTAT\n`;
+            emailBody += `--------\n`;
+            emailBody += `${niva.titel}\n`;
+            emailBody += `${info.namn} - ${niva.beskrivning}\n`;
+            emailBody += `\n`;
+            emailBody += `Bedömning: ${result.breakdown.befattning}-${result.breakdown.kunskap}-${result.breakdown.erfarenhet}-${result.breakdown.ledningsbehov} = NIVÅ ${result.level}\n`;
+            emailBody += `\n`;
+            
+            if (result.bottlenecks.length > 0) {
+                emailBody += `Begränsande faktor: ${result.bottlenecks.join(', ')}\n\n`;
+            }
+
+            // Lägg till sammanfattning av kriterierna
+            emailBody += `KRITERIER\n`;
+            emailBody += `---------\n`;
+            emailBody += `1. Befattningsbeskrivning: Nivå ${result.breakdown.befattning}\n`;
+            emailBody += `2. Kunskapskrav: Nivå ${result.breakdown.kunskap}\n`;
+            emailBody += `3. Erfarenhetskrav: Nivå ${result.breakdown.erfarenhet}\n`;
+            emailBody += `4. Ledningsbehov: Nivå ${result.breakdown.ledningsbehov}\n`;
+
+            // Skapa mailto-länk
+            const subject = encodeURIComponent(`Kompetensbedömning IT-service - ${info.namn}`);
+            const body = encodeURIComponent(emailBody);
+            const mailtoLink = `mailto:${recipientEmail}?subject=${subject}&body=${body}`;
+
+            // Öppna användarens e-postklient
+            window.location.href = mailtoLink;
+            
+            // Informera användaren
+            setTimeout(() => {
+                alert('✓ E-postklienten öppnas. Du kan nu komplettera och skicka meddelandet.\n\nTips: För fullständig rapport, använd "Visa rapport" och spara som PDF.');
+            }, 500);
+        }
+
+        function genereraRapportHTML(befattning, result, answers) {
+            const info = BEFATTNINGAR[befattning];
+            
+            const nivaInfo = {
+                1: { titel: 'NIVÅ 1 - Operativ', beskrivning: 'Grundläggande uppgifter under övervakning' },
+                2: { titel: 'NIVÅ 2 - Operativ-Taktisk', beskrivning: 'Självständigt arbete med rådgivning' },
+                3: { titel: 'NIVÅ 3 - Operativ-Taktisk-Strategisk', beskrivning: 'Teknisk expert och mentor' },
+                4: { titel: 'NIVÅ 4 - Strategisk', beskrivning: 'Driver strategisk utveckling och innovation' }
+            };
+
+            const niva = nivaInfo[result.level];
+            const datum = new Date().toLocaleDateString('sv-SE', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+
+            let html = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <title>Kompetensbedömning - ${info.namn}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 20px; }
+                        h1 { color: #2d3561; border-bottom: 3px solid #ff6b35; padding-bottom: 10px; }
+                        h2 { color: #2d3561; margin-top: 30px; }
+                        .info-grid { display: grid; grid-template-columns: 200px 1fr; gap: 10px; margin: 20px 0; }
+                        .info-label { font-weight: bold; color: #666; }
+                        .result-box { background: #f8f9fc; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 5px solid #ff6b35; }
+                        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+                        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+                        th { background: #2d3561; color: white; }
+                    </style>
+                </head>
+                <body>
+                    <h1>Kompetensbedömning IT-service</h1>
+                    <p><strong>Datum:</strong> ${datum}</p>
+                    ${currentUser ? `<p><strong>Användare:</strong> ${currentUser.name}</p>` : ''}
+                    
+                    <h2>📋 Grunddata</h2>
+                    <div class="info-grid">
+                        <div class="info-label">Befattning:</div>
+                        <div>${info.namn}</div>
+                        <div class="info-label">Erfarenhet:</div>
+                        <div>${answers.years_experience} år</div>
+                    </div>
+                    
+                    <h2>🎯 Bedömningsresultat</h2>
+                    <div class="result-box">
+                        <h3>${niva.titel}</h3>
+                        <p>${info.namn} - ${niva.beskrivning}</p>
+                        <p><strong>Bedömning:</strong> ${result.breakdown.befattning}-${result.breakdown.kunskap}-${result.breakdown.erfarenhet}-${result.breakdown.ledningsbehov} = NIVÅ ${result.level}</p>
+                    </div>
+                    
+                    <h2>💼 Arbetsvecka - Gemensamma frågor</h2>
+                    <table>
+                        <thead><tr><th>Påstående</th><th>Svar</th></tr></thead>
+                        <tbody>
+            `;
+
+            GEMENSAMMA_FRAGOR.forEach(q => {
+                html += `<tr><td>${q.text}</td><td>${answers[q.id] || '-'}</td></tr>`;
+            });
+
+            html += `
+                        </tbody>
+                    </table>
+                    
+                    <h2>🎯 Befattningsspecifika frågor</h2>
+                    <table>
+                        <thead><tr><th>Påstående</th><th>Svar</th></tr></thead>
+                        <tbody>
+            `;
+
+            const specifika = SPECIFIKA_FRAGOR[befattning];
+            specifika.forEach(q => {
+                html += `<tr><td>${q.text}</td><td>${answers[q.id] || '-'}</td></tr>`;
+            });
+
+            html += `
+                        </tbody>
+                    </table>
+                </body>
+                </html>
+            `;
+
+            return html;
+        }
+
+        // Ladda användarinfo när sidan laddas
+        document.addEventListener('DOMContentLoaded', fetchUserInfo);
+
+    </script>
+</body>
+</html>
