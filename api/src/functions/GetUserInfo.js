@@ -5,6 +5,7 @@ const { ClientSecretCredential } = require('@azure/identity');
 app.http('GetUserInfo', {
     methods: ['GET'],
     authLevel: 'anonymous',
+    route: 'GetUserInfo',
     handler: async (request, context) => {
         try {
             // Hämta användarens e-post från EasyAuth header
