@@ -5,6 +5,8 @@ app.http('GetUserInfo', {
     authLevel: 'anonymous',
     route: 'GetUserInfo',
     handler: async (request, context) => {
+        context.log('GetUserInfo endpoint called');
+        
         try {
             // Hämta access token från EasyAuth header
             const accessToken = request.headers.get('x-ms-token-aad-access-token');
@@ -12,8 +14,13 @@ app.http('GetUserInfo', {
             if (!accessToken) {
                 context.log('Ingen access token tillgänglig');
                 return {
-                    status: 401,
-                    jsonBody: { error: 'Inte autentiserad eller saknar token' }
+                    status: 200,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        user: null, 
+                        manager: null,
+                        error: 'Ingen access token' 
+                    })
                 };
             }
 
@@ -35,6 +42,7 @@ app.http('GetUserInfo', {
                         name: user.displayName,
                         email: user.mail || user.userPrincipalName
                     };
+                    context.log('Användare hämtad:', userInfo.name);
                 } else {
                     context.log('Kunde inte hämta användarprofil:', userResponse.status);
                 }
@@ -52,8 +60,9 @@ app.http('GetUserInfo', {
                         name: manager.displayName,
                         email: manager.mail || manager.userPrincipalName
                     };
+                    context.log('Chef hämtad:', managerInfo.name);
                 } else {
-                    context.log('Kunde inte hämta chef (kan vara normal om ingen chef finns):', managerResponse.status);
+                    context.log('Kunde inte hämta chef:', managerResponse.status);
                 }
 
             } catch (graphError) {
@@ -62,17 +71,19 @@ app.http('GetUserInfo', {
 
             return {
                 status: 200,
-                jsonBody: {
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
                     user: userInfo,
                     manager: managerInfo
-                }
+                })
             };
 
         } catch (error) {
             context.error('GetUserInfo error:', error);
             return {
                 status: 500,
-                jsonBody: { error: 'Ett oväntat fel uppstod' }
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ error: 'Ett oväntat fel uppstod' })
             };
         }
     }
