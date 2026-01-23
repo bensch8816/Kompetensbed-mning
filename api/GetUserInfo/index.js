@@ -1,75 +1,55 @@
 module.exports = async function (context, req) {
     context.log('GetUserInfo endpoint called');
     
+    // Logga alla headers för debugging
+    context.log('Headers:', JSON.stringify(req.headers, null, 2));
+    
     try {
-        // Hämta access token från EasyAuth header
-        const accessToken = req.headers['x-ms-token-aad-access-token'];
+        // Försök hämta client principal (finns alltid i SWA)
+        const clientPrincipalHeader = req.headers['x-ms-client-principal'];
         
-        if (!accessToken) {
-            context.log('Ingen access token tillgänglig');
+        if (clientPrincipalHeader) {
+            // Avkoda client principal
+            const decoded = Buffer.from(clientPrincipalHeader, 'base64').toString('utf8');
+            const clientPrincipal = JSON.parse(decoded);
+            context.log('Client Principal:', JSON.stringify(clientPrincipal, null, 2));
+            
+            // Hämta användarinfo från client principal
+            const userInfo = {
+                name: clientPrincipal.userDetails,
+                email: clientPrincipal.userDetails
+            };
+            
+            // Försök hitta claims för namn
+            if (clientPrincipal.claims) {
+                const nameClaim = clientPrincipal.claims.find(c => c.typ === 'name' || c.typ === 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name');
+                if (nameClaim) {
+                    userInfo.name = nameClaim.val;
+                }
+            }
+            
             context.res = {
                 status: 200,
                 headers: { 'Content-Type': 'application/json' },
-                body: { 
-                    user: null, 
+                body: {
+                    user: userInfo,
                     manager: null,
-                    error: 'Ingen access token' 
+                    debug: {
+                        hasAccessToken: !!req.headers['x-ms-token-aad-access-token'],
+                        clientPrincipal: clientPrincipal
+                    }
                 }
             };
             return;
         }
-
-        // Hämta användarinfo med delegerad token
-        let userInfo = null;
-        let managerInfo = null;
-
-        try {
-            // Hämta min profil
-            const userResponse = await fetch('https://graph.microsoft.com/v1.0/me?$select=displayName,mail,userPrincipalName', {
-                headers: {
-                    'Authorization': `Bearer ${accessToken}`
-                }
-            });
-
-            if (userResponse.ok) {
-                const user = await userResponse.json();
-                userInfo = {
-                    name: user.displayName,
-                    email: user.mail || user.userPrincipalName
-                };
-                context.log('Användare hämtad:', userInfo.name);
-            } else {
-                context.log('Kunde inte hämta användarprofil:', userResponse.status);
-            }
-
-            // Försök hämta chef
-            const managerResponse = await fetch('https://graph.microsoft.com/v1.0/me/manager?$select=displayName,mail,userPrincipalName', {
-                headers: {
-                    'Authorization': `Bearer ${accessToken}`
-                }
-            });
-
-            if (managerResponse.ok) {
-                const manager = await managerResponse.json();
-                managerInfo = {
-                    name: manager.displayName,
-                    email: manager.mail || manager.userPrincipalName
-                };
-                context.log('Chef hämtad:', managerInfo.name);
-            } else {
-                context.log('Kunde inte hämta chef:', managerResponse.status);
-            }
-
-        } catch (graphError) {
-            context.log.error('Graph API fel:', graphError.message);
-        }
-
+        
         context.res = {
             status: 200,
             headers: { 'Content-Type': 'application/json' },
-            body: {
-                user: userInfo,
-                manager: managerInfo
+            body: { 
+                user: null, 
+                manager: null,
+                error: 'Ingen client principal hittades' 
             }
         };
 
@@ -78,7 +58,7 @@ module.exports = async function (context, req) {
         context.res = {
             status: 500,
             headers: { 'Content-Type': 'application/json' },
-            body: { error: 'Ett oväntat fel uppstod' }
+            body: { error: 'Ett oväntat fel uppstod: ' + error.message }
         };
     }
 };
