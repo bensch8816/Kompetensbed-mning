@@ -2160,62 +2160,61 @@
 
         async function fetchUserInfo() {
             try {
+                // Hämta användar- och chefinfo från vår API-funktion
+                const response = await fetch('/api/GetUserInfo');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    if (data.user) {
+                        currentUser = {
+                            name: data.user.name,
+                            email: data.user.email
+                        };
+                        
+                        // Visa användarinfo i header
+                        let userInfoHtml = `<span style="opacity: 0.8;">Inloggad som:</span> <strong>${currentUser.name}</strong> (${currentUser.email})`;
+                        
+                        // Lägg till chefinfo om tillgänglig
+                        if (data.manager) {
+                            managerInfo = {
+                                name: data.manager.name,
+                                email: data.manager.email
+                            };
+                            userInfoHtml += `<br><span style="opacity: 0.8;">Chef:</span> <strong>${managerInfo.name}</strong> (${managerInfo.email})`;
+                            console.log('Chef information hämtad:', managerInfo);
+                        }
+                        
+                        document.getElementById('userInfo').innerHTML = userInfoHtml;
+                    }
+                } else {
+                    // Fallback till EasyAuth om API:et inte fungerar
+                    console.log('API svarade med fel, försöker med EasyAuth fallback');
+                    await fetchUserInfoFallback();
+                }
+            } catch (error) {
+                console.log('Fel vid hämtning av användarinfo, använder fallback:', error);
+                await fetchUserInfoFallback();
+            }
+        }
+        
+        async function fetchUserInfoFallback() {
+            try {
                 const response = await fetch('/.auth/me');
                 const data = await response.json();
                 
                 if (data.clientPrincipal) {
                     currentUser = {
                         name: data.clientPrincipal.userDetails,
-                        email: data.clientPrincipal.userDetails,
-                        userId: data.clientPrincipal.userId
+                        email: data.clientPrincipal.userDetails
                     };
                     
-                    // Visa användarinfo i header
                     document.getElementById('userInfo').innerHTML = `
-                        <span style="opacity: 0.8;">Inloggad som:</span> <strong>${currentUser.name}</strong> (${currentUser.email})
+                        <span style="opacity: 0.8;">Inloggad som:</span> <strong>${currentUser.email}</strong>
                     `;
-                    
-                    // Hämta chef information från Graph API
-                    await fetchManagerInfo();
                 }
             } catch (error) {
                 console.log('Kör lokalt utan auth');
-            }
-        }
-        
-        async function fetchManagerInfo() {
-            try {
-                // Använd EasyAuth för att få Graph API access token
-                const tokenResponse = await fetch('/.auth/me');
-                const tokenData = await tokenResponse.json();
-                
-                if (tokenData.clientPrincipal) {
-                    // Hämta manager från Graph API med User.Read permission
-                    const graphResponse = await fetch('https://graph.microsoft.com/v1.0/me/manager', {
-                        headers: {
-                            'Authorization': `Bearer ${tokenData.clientPrincipal.access_token}`
-                        }
-                    });
-                    
-                    if (graphResponse.ok) {
-                        const manager = await graphResponse.json();
-                        managerInfo = {
-                            name: manager.displayName,
-                            email: manager.mail || manager.userPrincipalName
-                        };
-                        console.log('Chef information hämtad:', managerInfo);
-                        
-                        // Uppdatera UI för att visa chef
-                        const userInfoDiv = document.getElementById('userInfo');
-                        if (userInfoDiv && managerInfo) {
-                            userInfoDiv.innerHTML += `<br><span style="opacity: 0.8;">Chef:</span> <strong>${managerInfo.name}</strong> (${managerInfo.email})`;
-                        }
-                    } else {
-                        console.log('Kunde inte hämta chef information');
-                    }
-                }
-            } catch (error) {
-                console.log('Fel vid hämtning av chef information:', error);
             }
         }
 
