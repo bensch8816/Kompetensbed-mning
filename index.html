@@ -648,8 +648,8 @@
             }
         }
     </style>
-    <!-- MSAL.js för Graph API autentisering -->
-    <script src="https://alcdn.msauth.net/browser/2.38.0/js/msal-browser.min.js"></script>
+    <!-- MSAL.js för Graph API autentisering (version 3.x) -->
+    <script src="https://alcdn.msauth.net/browser/3.27.0/js/msal-browser.min.js"></script>
 </head>
 <body>
     <div class="container">
@@ -2193,19 +2193,21 @@
             }
 
             const accounts = msalInstance.getAllAccounts();
+            const loginRequest = {
+                scopes: ['User.Read'],
+                loginHint: currentUser?.email
+            };
             
             if (accounts.length === 0) {
-                console.log('Inga MSAL-konton, försöker silent SSO');
+                console.log('Inga MSAL-konton, försöker popup-login');
                 try {
-                    // Försök silent SSO baserat på SWA-session
-                    const silentRequest = {
-                        scopes: ['User.Read'],
-                        loginHint: currentUser?.email
-                    };
-                    const response = await msalInstance.ssoSilent(silentRequest);
+                    // Använd popup istället för silent (iframe fungerar inte bra med SWA)
+                    const response = await msalInstance.loginPopup(loginRequest);
+                    console.log('Popup-login lyckades');
                     return response.accessToken;
-                } catch (silentError) {
-                    console.log('Silent SSO misslyckades:', silentError);
+                } catch (popupError) {
+                    console.log('Popup-login misslyckades:', popupError);
+                    // Om användaren stänger popup eller blockerar, returnera null
                     return null;
                 }
             }
@@ -2218,8 +2220,14 @@
                 const response = await msalInstance.acquireTokenSilent(silentRequest);
                 return response.accessToken;
             } catch (error) {
-                console.log('Silent token acquisition misslyckades:', error);
-                return null;
+                console.log('Silent token acquisition misslyckades, försöker popup');
+                try {
+                    const response = await msalInstance.acquireTokenPopup(loginRequest);
+                    return response.accessToken;
+                } catch (popupError) {
+                    console.log('Popup token acquisition misslyckades:', popupError);
+                    return null;
+                }
             }
         }
 
