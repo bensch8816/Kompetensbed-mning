@@ -648,6 +648,8 @@
             }
         }
     </style>
+    <!-- MSAL.js för Graph API autentisering -->
+    <script src="https://alcdn.msauth.net/browser/2.38.0/js/msal-browser.min.js"></script>
 </head>
 <body>
     <div class="container">
@@ -2157,44 +2159,149 @@
         // === USER INFO & EMAIL FUNCTIONALITY ===
         let currentUser = null;
         let managerInfo = null;
+        let msalInstance = null;
+
+        // MSAL konfiguration
+        const MSAL_CLIENT_ID = '363fccc8-2ebc-4423-8ecc-dea5f6f1d587';
+        const MSAL_TENANT_ID = '78a88712-586a-44a3-b2d9-d0ed2b991cd2';
+        
+        const msalConfig = {
+            auth: {
+                clientId: MSAL_CLIENT_ID,
+                authority: `https://login.microsoftonline.com/${MSAL_TENANT_ID}`,
+                redirectUri: window.location.origin
+            },
+            cache: {
+                cacheLocation: 'sessionStorage',
+                storeAuthStateInCookie: false
+            }
+        };
+
+        async function initializeMsal() {
+            try {
+                msalInstance = new msal.PublicClientApplication(msalConfig);
+                await msalInstance.initialize();
+                console.log('MSAL initialiserad');
+            } catch (error) {
+                console.error('MSAL initialization error:', error);
+            }
+        }
+
+        async function getGraphAccessToken() {
+            if (!msalInstance) {
+                await initializeMsal();
+            }
+
+            const accounts = msalInstance.getAllAccounts();
+            
+            if (accounts.length === 0) {
+                console.log('Inga MSAL-konton, försöker silent SSO');
+                try {
+                    // Försök silent SSO baserat på SWA-session
+                    const silentRequest = {
+                        scopes: ['User.Read'],
+                        loginHint: currentUser?.email
+                    };
+                    const response = await msalInstance.ssoSilent(silentRequest);
+                    return response.accessToken;
+                } catch (silentError) {
+                    console.log('Silent SSO misslyckades:', silentError);
+                    return null;
+                }
+            }
+
+            try {
+                const silentRequest = {
+                    scopes: ['User.Read'],
+                    account: accounts[0]
+                };
+                const response = await msalInstance.acquireTokenSilent(silentRequest);
+                return response.accessToken;
+            } catch (error) {
+                console.log('Silent token acquisition misslyckades:', error);
+                return null;
+            }
+        }
 
         async function fetchUserInfo() {
             try {
-                // Hämta användar- och chefinfo från vår API-funktion
-                const response = await fetch('/api/GetUserInfo');
+                // Först hämta grundläggande info från EasyAuth
+                const authResponse = await fetch('/.auth/me');
+                const authData = await authResponse.json();
                 
-                if (response.ok) {
-                    const data = await response.json();
+                if (authData.clientPrincipal) {
+                    currentUser = {
+                        name: authData.clientPrincipal.userDetails,
+                        email: authData.clientPrincipal.userDetails
+                    };
                     
-                    if (data.user) {
-                        currentUser = {
-                            name: data.user.name,
-                            email: data.user.email
-                        };
-                        
-                        // Visa användarinfo i header
-                        let userInfoHtml = `<span style="opacity: 0.8;">Inloggad som:</span> <strong>${currentUser.name}</strong> (${currentUser.email})`;
-                        
-                        // Lägg till chefinfo om tillgänglig
-                        if (data.manager) {
-                            managerInfo = {
-                                name: data.manager.name,
-                                email: data.manager.email
-                            };
-                            userInfoHtml += `<br><span style="opacity: 0.8;">Chef:</span> <strong>${managerInfo.name}</strong> (${managerInfo.email})`;
-                            console.log('Chef information hämtad:', managerInfo);
-                        }
-                        
-                        document.getElementById('userInfo').innerHTML = userInfoHtml;
-                    }
-                } else {
-                    // Fallback till EasyAuth om API:et inte fungerar
-                    console.log('API svarade med fel, försöker med EasyAuth fallback');
-                    await fetchUserInfoFallback();
+                    // Visa initial användarinfo
+                    document.getElementById('userInfo').innerHTML = `
+                        <span style="opacity: 0.8;">Inloggad som:</span> <strong>${currentUser.email}</strong>
+                        <span style="opacity: 0.6; font-size: 0.9em;"> (hämtar mer info...)</span>
+                    `;
+                    
+                    // Försök hämta mer detaljerad info via Graph API
+                    await fetchGraphUserInfo();
                 }
             } catch (error) {
-                console.log('Fel vid hämtning av användarinfo, använder fallback:', error);
-                await fetchUserInfoFallback();
+                console.log('Fel vid hämtning av användarinfo:', error);
+            }
+        }
+
+        async function fetchGraphUserInfo() {
+            try {
+                const accessToken = await getGraphAccessToken();
+                
+                if (!accessToken) {
+                    console.log('Kunde inte få access token, visar endast grundläggande info');
+                    document.getElementById('userInfo').innerHTML = `
+                        <span style="opacity: 0.8;">Inloggad som:</span> <strong>${currentUser.email}</strong>
+                    `;
+                    return;
+                }
+
+                // Hämta användarprofil
+                const userResponse = await fetch('https://graph.microsoft.com/v1.0/me?$select=displayName,mail,userPrincipalName', {
+                    headers: { 'Authorization': `Bearer ${accessToken}` }
+                });
+
+                if (userResponse.ok) {
+                    const userData = await userResponse.json();
+                    currentUser = {
+                        name: userData.displayName,
+                        email: userData.mail || userData.userPrincipalName
+                    };
+                }
+
+                // Hämta chef
+                const managerResponse = await fetch('https://graph.microsoft.com/v1.0/me/manager?$select=displayName,mail,userPrincipalName', {
+                    headers: { 'Authorization': `Bearer ${accessToken}` }
+                });
+
+                if (managerResponse.ok) {
+                    const managerData = await managerResponse.json();
+                    managerInfo = {
+                        name: managerData.displayName,
+                        email: managerData.mail || managerData.userPrincipalName
+                    };
+                    console.log('Chef hämtad:', managerInfo);
+                }
+
+                // Uppdatera UI
+                let userInfoHtml = `<span style="opacity: 0.8;">Inloggad som:</span> <strong>${currentUser.name}</strong> (${currentUser.email})`;
+                
+                if (managerInfo) {
+                    userInfoHtml += `<br><span style="opacity: 0.8;">Chef:</span> <strong>${managerInfo.name}</strong> (${managerInfo.email})`;
+                }
+                
+                document.getElementById('userInfo').innerHTML = userInfoHtml;
+
+            } catch (error) {
+                console.error('Graph API fel:', error);
+                document.getElementById('userInfo').innerHTML = `
+                    <span style="opacity: 0.8;">Inloggad som:</span> <strong>${currentUser.email}</strong>
+                `;
             }
         }
         
