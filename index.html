@@ -2156,6 +2156,7 @@
 
         // === USER INFO & EMAIL FUNCTIONALITY ===
         let currentUser = null;
+        let managerInfo = null;
 
         async function fetchUserInfo() {
             try {
@@ -2171,11 +2172,50 @@
                     
                     // Visa användarinfo i header
                     document.getElementById('userInfo').innerHTML = `
-                        <span style="opacity: 0.8;">Inloggad som:</span> <strong>${currentUser.name}</strong>
+                        <span style="opacity: 0.8;">Inloggad som:</span> <strong>${currentUser.name}</strong> (${currentUser.email})
                     `;
+                    
+                    // Hämta chef information från Graph API
+                    await fetchManagerInfo();
                 }
             } catch (error) {
                 console.log('Kör lokalt utan auth');
+            }
+        }
+        
+        async function fetchManagerInfo() {
+            try {
+                // Använd EasyAuth för att få Graph API access token
+                const tokenResponse = await fetch('/.auth/me');
+                const tokenData = await tokenResponse.json();
+                
+                if (tokenData.clientPrincipal) {
+                    // Hämta manager från Graph API med User.Read permission
+                    const graphResponse = await fetch('https://graph.microsoft.com/v1.0/me/manager', {
+                        headers: {
+                            'Authorization': `Bearer ${tokenData.clientPrincipal.access_token}`
+                        }
+                    });
+                    
+                    if (graphResponse.ok) {
+                        const manager = await graphResponse.json();
+                        managerInfo = {
+                            name: manager.displayName,
+                            email: manager.mail || manager.userPrincipalName
+                        };
+                        console.log('Chef information hämtad:', managerInfo);
+                        
+                        // Uppdatera UI för att visa chef
+                        const userInfoDiv = document.getElementById('userInfo');
+                        if (userInfoDiv && managerInfo) {
+                            userInfoDiv.innerHTML += `<br><span style="opacity: 0.8;">Chef:</span> <strong>${managerInfo.name}</strong> (${managerInfo.email})`;
+                        }
+                    } else {
+                        console.log('Kunde inte hämta chef information');
+                    }
+                }
+            } catch (error) {
+                console.log('Fel vid hämtning av chef information:', error);
             }
         }
 
@@ -2184,10 +2224,16 @@
                 alert('Ingen bedömning att skicka!');
                 return;
             }
-
-            // Fråga efter mottagare
-            const recipientEmail = prompt('Ange mottagarens e-postadress:', currentUser?.email || '');
-            if (!recipientEmail) return;
+            
+            // Använd inloggad användare som mottagare
+            const recipientEmail = currentUser?.email;
+            if (!recipientEmail) {
+                alert('Kunde inte hitta din e-postadress. Kontrollera att du är inloggad.');
+                return;
+            }
+            
+            // Använd chef som CC om tillgänglig
+            const ccEmail = managerInfo?.email || null;
 
             // Skapa textbaserad rapport för email
             const { befattning, result, answers } = window.currentAssessment;
@@ -2234,17 +2280,29 @@
             emailBody += `3. Erfarenhetskrav: Nivå ${result.breakdown.erfarenhet}\n`;
             emailBody += `4. Ledningsbehov: Nivå ${result.breakdown.ledningsbehov}\n`;
 
-            // Skapa mailto-länk
+            // Skapa mailto-länk med CC om angivet
             const subject = encodeURIComponent(`Kompetensbedömning IT-service - ${info.namn}`);
             const body = encodeURIComponent(emailBody);
-            const mailtoLink = `mailto:${recipientEmail}?subject=${subject}&body=${body}`;
+            let mailtoLink = `mailto:${recipientEmail}?subject=${subject}&body=${body}`;
+            
+            // Lägg till CC om angivet
+            if (ccEmail) {
+                mailtoLink += `&cc=${encodeURIComponent(ccEmail)}`;
+            }
 
             // Öppna användarens e-postklient
             window.location.href = mailtoLink;
             
             // Informera användaren
             setTimeout(() => {
-                alert('✓ E-postklienten öppnas. Du kan nu komplettera och skicka meddelandet.\n\nTips: För fullständig rapport, använd "Visa rapport" och spara som PDF.');
+                let message = '✓ E-postklienten öppnas för att skicka rapporten.';
+                message += `\n\n📨 Till: ${currentUser.name} (${recipientEmail})`;
+                if (ccEmail && managerInfo) {
+                    message += `\n📧 Kopia: ${managerInfo.name} (${ccEmail})`;
+                }
+                message += '\n\nDu kan komplettera meddelandet innan du skickar.';
+                message += '\n\nTips: För fullständig rapport, använd "Visa rapport" och spara som PDF.';
+                alert(message);
             }, 500);
         }
 
