@@ -2194,7 +2194,7 @@
 
             const accounts = msalInstance.getAllAccounts();
             const loginRequest = {
-                scopes: ['User.Read'],
+                scopes: ['User.Read', 'User.Read.All'],
                 loginHint: currentUser?.email
             };
             
@@ -2214,7 +2214,7 @@
 
             try {
                 const silentRequest = {
-                    scopes: ['User.Read'],
+                    scopes: ['User.Read', 'User.Read.All'],
                     account: accounts[0]
                 };
                 const response = await msalInstance.acquireTokenSilent(silentRequest);
@@ -2287,6 +2287,7 @@
                     headers: { 'Authorization': `Bearer ${accessToken}` }
                 });
 
+                let managerStatusMsg = '';
                 if (managerResponse.ok) {
                     const managerData = await managerResponse.json();
                     managerInfo = {
@@ -2294,6 +2295,13 @@
                         email: managerData.mail || managerData.userPrincipalName
                     };
                     console.log('Chef hämtad:', managerInfo);
+                } else if (managerResponse.status === 403) {
+                    console.log('403 - Ingen behörighet att läsa manager. Behöver User.Read.All consent.');
+                    managerStatusMsg = '<br><span style="opacity: 0.6; font-size: 0.85em;">⚠️ Chef-info kräver ytterligare behörigheter</span>';
+                } else if (managerResponse.status === 404) {
+                    console.log('404 - Ingen chef registrerad i systemet');
+                } else {
+                    console.log('Kunde inte hämta chef:', managerResponse.status);
                 }
 
                 // Uppdatera UI
@@ -2301,6 +2309,8 @@
                 
                 if (managerInfo) {
                     userInfoHtml += `<br><span style="opacity: 0.8;">Chef:</span> <strong>${managerInfo.name}</strong> (${managerInfo.email})`;
+                } else if (managerStatusMsg) {
+                    userInfoHtml += managerStatusMsg;
                 }
                 
                 document.getElementById('userInfo').innerHTML = userInfoHtml;
