@@ -951,6 +951,11 @@
 
             const result = beraknaNiva(befattning, answers);
             visaResultat(befattning, result, answers);
+            
+            // Skicka automatiskt e-post med rapport till användare och chef
+            setTimeout(() => {
+                skickaEmailMedPDF();
+            }, 500);
         });
 
         function beraknaNiva(befattning, answers) {
