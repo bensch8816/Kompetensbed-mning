@@ -1398,51 +1398,28 @@
         }
 
         async function genereraPDF() {
-            const { befattning, result, answers } = window.currentAssessment;
-            const info = BEFATTNINGAR[befattning];
-            const datum = new Date().toLocaleDateString('sv-SE', { year: 'numeric', month: 'long', day: 'numeric' });
-            
-            const nivaInfo = {
-                1: { titel: 'NIVÅ 1 - Operativ', beskrivning: 'Grundläggande uppgifter under övervakning' },
-                2: { titel: 'NIVÅ 2 - Operativ-Taktisk', beskrivning: 'Självständigt arbete med rådgivning' },
-                3: { titel: 'NIVÅ 3 - Operativ-Taktisk-Strategisk', beskrivning: 'Teknisk expert och mentor' },
-                4: { titel: 'NIVÅ 4 - Strategisk', beskrivning: 'Driver strategisk utveckling' }
-            };
-            const niva = nivaInfo[result.level];
-
-            // Använd jsPDF direkt istället för html2pdf
-            const { jsPDF } = window.jspdf || {};
-            
-            // Fallback till html2pdf om jsPDF inte finns
             const container = document.getElementById('pdfReportContainer');
             container.innerHTML = genereraRapportHTML();
-            container.style.cssText = 'position: absolute; left: 0; top: 0; width: 794px; background: white; z-index: 9999;';
-            
-            // Vänta på rendering
-            await new Promise(resolve => setTimeout(resolve, 200));
+            container.style.display = 'block';
+            container.style.position = 'absolute';
+            container.style.left = '-9999px';
+            container.style.width = '800px';
 
             const opt = {
                 margin: 10,
                 filename: `kompetensbedömning_${new Date().toISOString().split('T')[0]}.pdf`,
-                image: { type: 'jpeg', quality: 0.95 },
-                html2canvas: { 
-                    scale: 2,
-                    useCORS: true,
-                    backgroundColor: '#ffffff',
-                    logging: true
-                },
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
             try {
                 const pdfBlob = await html2pdf().set(opt).from(container).outputPdf('blob');
-                container.style.cssText = 'display: none;';
-                container.innerHTML = '';
+                container.style.display = 'none';
                 return pdfBlob;
             } catch (error) {
                 console.error('PDF generation error:', error);
-                container.style.cssText = 'display: none;';
-                container.innerHTML = '';
+                container.style.display = 'none';
                 throw error;
             }
         }
@@ -1540,7 +1517,7 @@
                     4: 'NIVÅ 4 - Strategisk'
                 };
 
-                // Skapa e-postmeddelande
+                // Skapa e-postmeddelande (utan PDF-bilaga)
                 const emailMessage = {
                     message: {
                         subject: `Självskattning - Kompetensbedömning: ${info.namn} - ${datum}`,
@@ -1567,12 +1544,32 @@
                                             <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Datum:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${datum}</td></tr>
                                         </table>
                                         
-                                        <div style="background: linear-gradient(135deg, #2d3561 0%, #4a5a8f 100%); color: white; padding: 25px; border-radius: 10px; margin: 20px 0;">
-                                            <h2 style="margin: 0 0 15px 0; text-align: center;">🎯 Självskattningsresultat</h2>
+                                        <div style="background: #2d3561; color: white; padding: 25px; border-radius: 10px; margin: 20px 0;">
+                                            <h2 style="margin: 0 0 15px 0; text-align: center; color: white;">🎯 Självskattningsresultat</h2>
                                             <div style="text-align: center; font-size: 24px; font-weight: bold; margin-bottom: 10px;">${nivaInfo[result.level]}</div>
                                             <div style="text-align: center; opacity: 0.9;">Bedömning: ${result.breakdown.befattning}-${result.breakdown.kunskap}-${result.breakdown.erfarenhet}-${result.breakdown.ledningsbehov}</div>
                                             ${result.bottlenecks.length > 0 ? `<div style="text-align: center; margin-top: 10px; font-size: 14px;">Begränsande: ${result.bottlenecks.join(', ')}</div>` : ''}
                                         </div>
+
+                                        <h3 style="color: #2d3561;">📊 Bedömning per kriterium</h3>
+                                        <table style="width: 100%; border-collapse: collapse; margin: 15px 0;">
+                                            <tr style="background: #f5f5f5;">
+                                                <td style="padding: 12px; border: 1px solid #ddd;"><strong>Befattningsbeskrivning</strong></td>
+                                                <td style="padding: 12px; border: 1px solid #ddd; text-align: center; font-size: 18px; font-weight: bold;">Nivå ${result.breakdown.befattning}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 12px; border: 1px solid #ddd;"><strong>Kunskapskrav</strong></td>
+                                                <td style="padding: 12px; border: 1px solid #ddd; text-align: center; font-size: 18px; font-weight: bold;">Nivå ${result.breakdown.kunskap}</td>
+                                            </tr>
+                                            <tr style="background: #f5f5f5;">
+                                                <td style="padding: 12px; border: 1px solid #ddd;"><strong>Erfarenhetskrav</strong></td>
+                                                <td style="padding: 12px; border: 1px solid #ddd; text-align: center; font-size: 18px; font-weight: bold;">Nivå ${result.breakdown.erfarenhet}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 12px; border: 1px solid #ddd;"><strong>Ledningsbehov</strong></td>
+                                                <td style="padding: 12px; border: 1px solid #ddd; text-align: center; font-size: 18px; font-weight: bold;">Nivå ${result.breakdown.ledningsbehov}</td>
+                                            </tr>
+                                        </table>
                                         
                                         <h2 style="color: #2d3561;">📌 Nästa steg</h2>
                                         <p>Boka in ett möte för att diskutera självskattningen. Den gemensamma bedömningen blir underlag för utvecklingsplanen.</p>
