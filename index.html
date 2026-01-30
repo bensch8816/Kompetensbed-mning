@@ -1398,25 +1398,24 @@
         }
 
         async function genereraPDF() {
-            const container = document.getElementById('pdfReportContainer');
-            container.innerHTML = genereraRapportHTML();
-            
-            // Gör containern synlig men utanför viewporten
-            container.style.cssText = `
-                display: block !important;
-                position: fixed !important;
-                top: 0 !important;
-                left: 0 !important;
-                width: 800px !important;
-                background: #ffffff !important;
-                z-index: -1 !important;
-                opacity: 1 !important;
-                visibility: visible !important;
+            // Skapa en temporär div för PDF-rendering
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = genereraRapportHTML();
+            tempDiv.style.cssText = `
+                position: absolute;
+                left: -9999px;
+                top: 0;
+                width: 800px;
+                background: #ffffff;
             `;
+            document.body.appendChild(tempDiv);
 
-            // Debug: Logga innehållet
-            console.log('PDF Container innerHTML length:', container.innerHTML.length);
-            console.log('currentAssessment:', window.currentAssessment);
+            // Debug
+            console.log('PDF temp div innerHTML length:', tempDiv.innerHTML.length);
+            console.log('tempDiv added to body');
+
+            // Vänta lite så att DOM hinner uppdateras
+            await new Promise(resolve => setTimeout(resolve, 100));
 
             const opt = {
                 margin: 10,
@@ -1426,19 +1425,19 @@
                     scale: 2, 
                     useCORS: true,
                     logging: true,
-                    backgroundColor: '#ffffff',
-                    windowWidth: 800
+                    backgroundColor: '#ffffff'
                 },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
             try {
-                const pdfBlob = await html2pdf().set(opt).from(container).outputPdf('blob');
-                container.style.cssText = 'display: none;';
+                const pdfBlob = await html2pdf().set(opt).from(tempDiv).outputPdf('blob');
+                document.body.removeChild(tempDiv);
+                console.log('PDF blob size:', pdfBlob.size);
                 return pdfBlob;
             } catch (error) {
                 console.error('PDF generation error:', error);
-                container.style.cssText = 'display: none;';
+                document.body.removeChild(tempDiv);
                 throw error;
             }
         }
