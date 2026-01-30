@@ -24,10 +24,15 @@
 
         body {
             font-family: 'Instrument Sans', sans-serif;
-            background: var(--bg);
+            background-image: url('image.png');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
             color: var(--text);
             line-height: 1.6;
             padding: 20px;
+            min-height: 100vh;
         }
 
         .container { max-width: 1200px; margin: 0 auto; }
@@ -1310,25 +1315,7 @@
         // PDF GENERATION
         // ═══════════════════════════════════════════════════════════
 
-        // Ladda bild och konvertera till base64
-        async function loadImageAsBase64(url) {
-            return new Promise((resolve, reject) => {
-                const img = new Image();
-                img.crossOrigin = 'anonymous';
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    canvas.width = img.naturalWidth;
-                    canvas.height = img.naturalHeight;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0);
-                    resolve(canvas.toDataURL('image/png'));
-                };
-                img.onerror = () => resolve(null); // Returnera null om bilden inte kan laddas
-                img.src = url;
-            });
-        }
-
-        function genereraRapportHTML(bgBase64 = null) {
+        function genereraRapportHTML() {
             const { befattning, result, answers } = window.currentAssessment;
             const info = BEFATTNINGAR[befattning];
             
@@ -1346,173 +1333,115 @@
                 day: 'numeric' 
             });
 
-            // Bakgrundsbild - använd base64 om tillgänglig
-            const bgStyle = bgBase64 
-                ? `background-image: url('${bgBase64}'); background-size: cover; background-position: center; background-repeat: no-repeat;`
-                : 'background: linear-gradient(135deg, #f0f4f8 0%, #e8ecf0 100%);';
-
             return `
-                <div style="font-family: 'Segoe UI', Arial, sans-serif; min-height: 100%; ${bgStyle} position: relative;">
-                    <!-- Overlay för läsbarhet -->
-                    <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255, 255, 255, 0.92);"></div>
-                    
-                    <div style="position: relative; z-index: 1; padding: 40px; max-width: 800px; margin: 0 auto; color: #333;">
-                        <!-- Header -->
-                        <div style="text-align: center; margin-bottom: 30px; padding: 30px; background: linear-gradient(135deg, rgba(45, 53, 97, 0.95) 0%, rgba(74, 90, 143, 0.95) 100%); border-radius: 12px; color: white;">
-                            <h1 style="font-size: 26px; margin: 0 0 10px 0; font-weight: 600;">Självskattning</h1>
-                            <p style="font-size: 16px; margin: 0; opacity: 0.9;">Kompetensbedömning IT-service</p>
-                        </div>
+                <div style="font-family: Arial, sans-serif; padding: 30px; color: #333; background: #fff;">
+                    <div style="text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 3px solid #2d3561;">
+                        <h1 style="color: #2d3561; font-size: 24px; margin: 0 0 10px 0;">Självskattning - Kompetensbedömning IT-service</h1>
+                        <p style="color: #666; font-size: 14px; margin: 5px 0;">Rapport genererad: ${datum}</p>
+                        ${currentUser ? `<p style="color: #666; font-size: 14px; margin: 5px 0;">Medarbetare: ${currentUser.name} (${currentUser.email})</p>` : ''}
+                        ${managerInfo ? `<p style="color: #666; font-size: 14px; margin: 5px 0;">Chef: ${managerInfo.name} (${managerInfo.email})</p>` : ''}
+                    </div>
+
+                    <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin-bottom: 25px;">
+                        <strong>⚠️ Viktigt:</strong> Detta är en självskattning som används som underlag för dialog med din chef.
+                    </div>
+
+                    <div style="background: #f5f5f5; padding: 20px; margin-bottom: 25px; border-radius: 8px;">
+                        <h2 style="color: #2d3561; margin: 0 0 15px 0; font-size: 18px;">📋 Grunddata</h2>
+                        <p style="margin: 8px 0;"><strong>Befattning:</strong> ${info.namn}</p>
+                        <p style="margin: 8px 0;"><strong>Erfarenhet:</strong> ${answers.years_experience} år</p>
+                    </div>
+
+                    <div style="background: #2d3561; color: white; padding: 25px; margin-bottom: 25px; border-radius: 8px;">
+                        <h2 style="margin: 0 0 15px 0; text-align: center; font-size: 18px;">🎯 Resultat</h2>
+                        <div style="text-align: center; font-size: 24px; font-weight: bold; margin-bottom: 10px;">${niva.titel}</div>
+                        <div style="text-align: center; opacity: 0.9;">${info.namn} - ${niva.beskrivning}</div>
                         
-                        <!-- Metadata -->
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 25px; padding: 15px 20px; background: rgba(255,255,255,0.95); border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-left: 4px solid #2d3561;">
-                            <div>
-                                <p style="margin: 0 0 5px 0; font-size: 12px; color: #666; text-transform: uppercase;">Rapport genererad</p>
-                                <p style="margin: 0; font-weight: 600; color: #2d3561;">${datum}</p>
-                            </div>
-                            ${currentUser ? `<div style="text-align: center;">
-                                <p style="margin: 0 0 5px 0; font-size: 12px; color: #666; text-transform: uppercase;">Medarbetare</p>
-                                <p style="margin: 0; font-weight: 600; color: #2d3561;">${currentUser.name}</p>
-                            </div>` : ''}
-                            ${managerInfo ? `<div style="text-align: right;">
-                                <p style="margin: 0 0 5px 0; font-size: 12px; color: #666; text-transform: uppercase;">Chef</p>
-                                <p style="margin: 0; font-weight: 600; color: #2d3561;">${managerInfo.name}</p>
-                            </div>` : ''}
-                        </div>
-
-                        <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px 20px; margin-bottom: 25px; border-radius: 0 8px 8px 0;">
-                            <strong style="color: #856404;">⚠️ Viktigt:</strong> <span style="color: #856404;">Detta är en självskattning som används som underlag för dialog med din chef. Din chef gör den officiella bedömningen.</span>
-                        </div>
-
-                        <!-- Grunddata -->
-                        <div style="background: white; padding: 25px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
-                            <h2 style="color: #2d3561; margin: 0 0 20px 0; font-size: 18px; padding-bottom: 10px; border-bottom: 2px solid #f0f0f0;">📋 Grunddata</h2>
+                        <div style="margin-top: 20px; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px;">
                             <table style="width: 100%; border-collapse: collapse;">
                                 <tr>
-                                    <td style="padding: 12px 0; font-weight: 500; width: 150px; color: #666;">Befattning:</td>
-                                    <td style="padding: 12px 0; font-weight: 600; color: #2d3561;">${info.namn}</td>
-                                </tr>
-                                <tr>
-                                    <td style="padding: 12px 0; font-weight: 500; color: #666;">Erfarenhet:</td>
-                                    <td style="padding: 12px 0; font-weight: 600; color: #2d3561;">${answers.years_experience} år</td>
+                                    <td style="text-align: center; padding: 10px; width: 25%;">
+                                        <div style="font-size: 24px; font-weight: bold;">${result.breakdown.befattning}</div>
+                                        <div style="font-size: 11px; opacity: 0.8;">Befattning</div>
+                                    </td>
+                                    <td style="text-align: center; padding: 10px; width: 25%;">
+                                        <div style="font-size: 24px; font-weight: bold;">${result.breakdown.kunskap}</div>
+                                        <div style="font-size: 11px; opacity: 0.8;">Kunskap</div>
+                                    </td>
+                                    <td style="text-align: center; padding: 10px; width: 25%;">
+                                        <div style="font-size: 24px; font-weight: bold;">${result.breakdown.erfarenhet}</div>
+                                        <div style="font-size: 11px; opacity: 0.8;">Erfarenhet</div>
+                                    </td>
+                                    <td style="text-align: center; padding: 10px; width: 25%;">
+                                        <div style="font-size: 24px; font-weight: bold;">${result.breakdown.ledningsbehov}</div>
+                                        <div style="font-size: 11px; opacity: 0.8;">Ledningsbehov</div>
+                                    </td>
                                 </tr>
                             </table>
-                        </div>
-
-                        <!-- Resultat -->
-                        <div style="background: linear-gradient(135deg, #2d3561 0%, #4a5a8f 100%); color: white; padding: 30px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(45, 53, 97, 0.3);">
-                            <h2 style="margin: 0 0 20px 0; text-align: center; font-size: 18px;">🎯 Resultat</h2>
-                            <div style="text-align: center; font-size: 28px; font-weight: 700; margin-bottom: 8px;">${niva.titel}</div>
-                            <div style="text-align: center; opacity: 0.9; font-size: 14px;">${info.namn} - ${niva.beskrivning}</div>
-                            
-                            <div style="margin-top: 25px; background: rgba(255,255,255,0.15); padding: 20px; border-radius: 10px;">
-                                <table style="width: 100%; border-collapse: collapse;">
-                                    <tr>
-                                        <td style="text-align: center; padding: 10px;">
-                                            <div style="font-size: 28px; font-weight: 700;">${result.breakdown.befattning}</div>
-                                            <div style="font-size: 11px; opacity: 0.8; margin-top: 5px;">Befattning</div>
-                                        </td>
-                                        <td style="text-align: center; padding: 10px;">
-                                            <div style="font-size: 28px; font-weight: 700;">${result.breakdown.kunskap}</div>
-                                            <div style="font-size: 11px; opacity: 0.8; margin-top: 5px;">Kunskap</div>
-                                        </td>
-                                        <td style="text-align: center; padding: 10px;">
-                                            <div style="font-size: 28px; font-weight: 700;">${result.breakdown.erfarenhet}</div>
-                                            <div style="font-size: 11px; opacity: 0.8; margin-top: 5px;">Erfarenhet</div>
-                                        </td>
-                                        <td style="text-align: center; padding: 10px;">
-                                            <div style="font-size: 28px; font-weight: 700;">${result.breakdown.ledningsbehov}</div>
-                                            <div style="font-size: 11px; opacity: 0.8; margin-top: 5px;">Ledningsbehov</div>
-                                        </td>
-                                    </tr>
-                                </table>
-                                <div style="margin-top: 15px; text-align: center; font-size: 13px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.2);">
-                                    <strong>Flaskhalsprincipen:</strong> ${result.breakdown.befattning}-${result.breakdown.kunskap}-${result.breakdown.erfarenhet}-${result.breakdown.ledningsbehov} = NIVÅ ${result.level}
-                                    ${result.bottlenecks.length > 0 ? `<br><span style="opacity: 0.85;">Begränsande: ${result.bottlenecks.join(', ')}</span>` : ''}
-                                </div>
+                            <div style="margin-top: 15px; text-align: center; font-size: 12px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.3);">
+                                <strong>Flaskhalsprincipen:</strong> ${result.breakdown.befattning}-${result.breakdown.kunskap}-${result.breakdown.erfarenhet}-${result.breakdown.ledningsbehov} = NIVÅ ${result.level}
+                                ${result.bottlenecks.length > 0 ? `<br>Begränsande: ${result.bottlenecks.join(', ')}` : ''}
                             </div>
                         </div>
+                    </div>
 
-                        <!-- Nästa steg -->
-                        <div style="padding: 25px; background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%); border-radius: 12px; border-left: 4px solid #4caf50;">
-                            <h3 style="color: #2e7d32; margin: 0 0 12px 0; font-size: 16px;">📌 Nästa steg</h3>
-                            <p style="margin: 0; color: #1b5e20; line-height: 1.6;">Boka in ett möte med din chef för att diskutera din självskattning. Er gemensamma bedömning blir underlag för din utvecklingsplan.</p>
-                        </div>
-                        
-                        <!-- Footer -->
-                        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e0e0e0; text-align: center;">
-                            <p style="margin: 0; font-size: 11px; color: #999;">Kompetensbedömning IT-service • ${datum}</p>
-                        </div>
+                    <div style="background: #e8f5e9; padding: 20px; border-radius: 8px; border-left: 4px solid #4caf50;">
+                        <h3 style="color: #2e7d32; margin: 0 0 10px 0; font-size: 16px;">📌 Nästa steg</h3>
+                        <p style="margin: 0; color: #1b5e20;">Boka in ett möte med din chef för att diskutera din självskattning. Er gemensamma bedömning blir underlag för din utvecklingsplan.</p>
+                    </div>
+                    
+                    <div style="margin-top: 25px; padding-top: 15px; border-top: 1px solid #ddd; text-align: center;">
+                        <p style="margin: 0; font-size: 11px; color: #999;">Kompetensbedömning IT-service • ${datum}</p>
                     </div>
                 </div>
             `;
         }
 
         async function genereraPDF() {
+            const { befattning, result, answers } = window.currentAssessment;
+            const info = BEFATTNINGAR[befattning];
+            const datum = new Date().toLocaleDateString('sv-SE', { year: 'numeric', month: 'long', day: 'numeric' });
+            
+            const nivaInfo = {
+                1: { titel: 'NIVÅ 1 - Operativ', beskrivning: 'Grundläggande uppgifter under övervakning' },
+                2: { titel: 'NIVÅ 2 - Operativ-Taktisk', beskrivning: 'Självständigt arbete med rådgivning' },
+                3: { titel: 'NIVÅ 3 - Operativ-Taktisk-Strategisk', beskrivning: 'Teknisk expert och mentor' },
+                4: { titel: 'NIVÅ 4 - Strategisk', beskrivning: 'Driver strategisk utveckling' }
+            };
+            const niva = nivaInfo[result.level];
+
+            // Använd jsPDF direkt istället för html2pdf
+            const { jsPDF } = window.jspdf || {};
+            
+            // Fallback till html2pdf om jsPDF inte finns
             const container = document.getElementById('pdfReportContainer');
+            container.innerHTML = genereraRapportHTML();
+            container.style.cssText = 'position: absolute; left: 0; top: 0; width: 794px; background: white; z-index: 9999;';
             
-            // Ladda bakgrundsbilden som base64 först
-            const bgBase64 = await loadImageAsBase64(window.location.origin + '/image.png');
-            console.log('Bakgrundsbild laddad:', bgBase64 ? 'Ja' : 'Nej');
-            
-            const rapportHTML = genereraRapportHTML(bgBase64);
-            
-            // Skapa en wrapper med explicit bakgrund
-            container.innerHTML = `
-                <div style="background: #ffffff; min-height: 297mm; width: 210mm;">
-                    ${rapportHTML}
-                </div>
-            `;
-            
-            // Visa containern på ett sätt som html2canvas kan rendera
-            container.style.cssText = `
-                position: fixed;
-                left: 0;
-                top: 0;
-                width: 210mm;
-                min-height: 297mm;
-                background: white;
-                z-index: -9999;
-                visibility: visible;
-                opacity: 1;
-            `;
-
-            // Vänta på att bilder ska laddas
-            const images = container.querySelectorAll('img');
-            await Promise.all(Array.from(images).map(img => {
-                if (img.complete) return Promise.resolve();
-                return new Promise((resolve) => {
-                    img.onload = resolve;
-                    img.onerror = resolve; // Fortsätt även om bild inte laddas
-                });
-            }));
-
-            // Ge lite tid för rendering
-            await new Promise(resolve => setTimeout(resolve, 100));
+            // Vänta på rendering
+            await new Promise(resolve => setTimeout(resolve, 200));
 
             const opt = {
-                margin: 0,
+                margin: 10,
                 filename: `kompetensbedömning_${new Date().toISOString().split('T')[0]}.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
+                image: { type: 'jpeg', quality: 0.95 },
                 html2canvas: { 
-                    scale: 2, 
+                    scale: 2,
                     useCORS: true,
-                    allowTaint: true,
                     backgroundColor: '#ffffff',
-                    logging: false,
-                    windowWidth: 794, // A4 width in pixels at 96 DPI
-                    windowHeight: 1123 // A4 height in pixels at 96 DPI
+                    logging: true
                 },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
             try {
-                const pdfBlob = await html2pdf().set(opt).from(container.firstElementChild).outputPdf('blob');
-                container.style.cssText = 'display: none; position: absolute; left: -9999px;';
+                const pdfBlob = await html2pdf().set(opt).from(container).outputPdf('blob');
+                container.style.cssText = 'display: none;';
                 container.innerHTML = '';
                 return pdfBlob;
             } catch (error) {
                 console.error('PDF generation error:', error);
-                container.style.cssText = 'display: none; position: absolute; left: -9999px;';
+                container.style.cssText = 'display: none;';
                 container.innerHTML = '';
                 throw error;
             }
