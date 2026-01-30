@@ -1310,7 +1310,25 @@
         // PDF GENERATION
         // ═══════════════════════════════════════════════════════════
 
-        function genereraRapportHTML() {
+        // Ladda bild och konvertera till base64
+        async function loadImageAsBase64(url) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = img.naturalWidth;
+                    canvas.height = img.naturalHeight;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+                    resolve(canvas.toDataURL('image/png'));
+                };
+                img.onerror = () => resolve(null); // Returnera null om bilden inte kan laddas
+                img.src = url;
+            });
+        }
+
+        function genereraRapportHTML(bgBase64 = null) {
             const { befattning, result, answers } = window.currentAssessment;
             const info = BEFATTNINGAR[befattning];
             
@@ -1328,11 +1346,13 @@
                 day: 'numeric' 
             });
 
-            // Bakgrundsbild URL
-            const bgImageUrl = window.location.origin + '/image.png';
+            // Bakgrundsbild - använd base64 om tillgänglig
+            const bgStyle = bgBase64 
+                ? `background-image: url('${bgBase64}'); background-size: cover; background-position: center; background-repeat: no-repeat;`
+                : 'background: linear-gradient(135deg, #f0f4f8 0%, #e8ecf0 100%);';
 
             return `
-                <div style="font-family: 'Segoe UI', Arial, sans-serif; min-height: 100%; background-image: url('${bgImageUrl}'); background-size: cover; background-position: center; background-repeat: no-repeat; position: relative;">
+                <div style="font-family: 'Segoe UI', Arial, sans-serif; min-height: 100%; ${bgStyle} position: relative;">
                     <!-- Overlay för läsbarhet -->
                     <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255, 255, 255, 0.92);"></div>
                     
@@ -1429,7 +1449,12 @@
 
         async function genereraPDF() {
             const container = document.getElementById('pdfReportContainer');
-            const rapportHTML = genereraRapportHTML();
+            
+            // Ladda bakgrundsbilden som base64 först
+            const bgBase64 = await loadImageAsBase64(window.location.origin + '/image.png');
+            console.log('Bakgrundsbild laddad:', bgBase64 ? 'Ja' : 'Nej');
+            
+            const rapportHTML = genereraRapportHTML(bgBase64);
             
             // Skapa en wrapper med explicit bakgrund
             container.innerHTML = `
