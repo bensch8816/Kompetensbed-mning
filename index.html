@@ -418,8 +418,8 @@
     </style>
     <!-- MSAL.js för Graph API autentisering -->
     <script src="https://alcdn.msauth.net/browser/2.38.0/js/msal-browser.min.js"></script>
-    <!-- html2pdf för PDF-generering (lokal fil för att undvika tracking prevention) -->
-    <script src="html2pdf.bundle.min.js"></script>
+    <!-- jsPDF för PDF-generering -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
     <div class="container">
@@ -1398,48 +1398,161 @@
         }
 
         async function genereraPDF() {
-            // Skapa en temporär div för PDF-rendering
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = genereraRapportHTML();
-            tempDiv.style.cssText = `
-                position: absolute;
-                left: -9999px;
-                top: 0;
-                width: 800px;
-                background: #ffffff;
-            `;
-            document.body.appendChild(tempDiv);
-
-            // Debug
-            console.log('PDF temp div innerHTML length:', tempDiv.innerHTML.length);
-            console.log('tempDiv added to body');
-
-            // Vänta lite så att DOM hinner uppdateras
-            await new Promise(resolve => setTimeout(resolve, 100));
-
-            const opt = {
-                margin: 10,
-                filename: `kompetensbedömning_${new Date().toISOString().split('T')[0]}.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { 
-                    scale: 2, 
-                    useCORS: true,
-                    logging: true,
-                    backgroundColor: '#ffffff'
-                },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'mm', 'a4');
+            
+            const { befattning, result, answers } = window.currentAssessment;
+            const info = BEFATTNINGAR[befattning];
+            const datum = new Date().toLocaleDateString('sv-SE');
+            
+            const nivaInfo = {
+                1: 'NIVÅ 1 - Operativ',
+                2: 'NIVÅ 2 - Operativ-Taktisk', 
+                3: 'NIVÅ 3 - Operativ-Taktisk-Strategisk',
+                4: 'NIVÅ 4 - Strategisk'
             };
 
-            try {
-                const pdfBlob = await html2pdf().set(opt).from(tempDiv).outputPdf('blob');
-                document.body.removeChild(tempDiv);
-                console.log('PDF blob size:', pdfBlob.size);
-                return pdfBlob;
-            } catch (error) {
-                console.error('PDF generation error:', error);
-                document.body.removeChild(tempDiv);
-                throw error;
+            const nivaBeskrivning = {
+                1: 'Grundläggande uppgifter under övervakning',
+                2: 'Självständigt arbete med rådgivning',
+                3: 'Teknisk expert och mentor',
+                4: 'Driver strategisk utveckling'
+            };
+
+            let y = 20;
+            const leftMargin = 20;
+            const pageWidth = 210;
+            const contentWidth = pageWidth - 40;
+
+            // Rubrik
+            doc.setFillColor(45, 53, 97);
+            doc.rect(0, 0, pageWidth, 45, 'F');
+            
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(18);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Självskattning - Kompetensbedömning IT-service', pageWidth / 2, 20, { align: 'center' });
+            
+            doc.setFontSize(11);
+            doc.setFont('helvetica', 'normal');
+            doc.text(`Rapport genererad: ${datum}`, pageWidth / 2, 30, { align: 'center' });
+            
+            if (currentUser) {
+                doc.text(`Medarbetare: ${currentUser.name} (${currentUser.email})`, pageWidth / 2, 37, { align: 'center' });
             }
+
+            y = 55;
+
+            // Varningsruta
+            doc.setFillColor(255, 243, 205);
+            doc.rect(leftMargin, y, contentWidth, 15, 'F');
+            doc.setDrawColor(255, 193, 7);
+            doc.setLineWidth(1);
+            doc.line(leftMargin, y, leftMargin, y + 15);
+            
+            doc.setTextColor(133, 100, 4);
+            doc.setFontSize(10);
+            doc.text('⚠️ Viktigt: Detta är en självskattning som används som underlag för dialog med din chef.', leftMargin + 5, y + 9);
+            
+            y += 25;
+
+            // Grunddata
+            doc.setFillColor(245, 245, 245);
+            doc.rect(leftMargin, y, contentWidth, 25, 'F');
+            
+            doc.setTextColor(45, 53, 97);
+            doc.setFontSize(14);
+            doc.setFont('helvetica', 'bold');
+            doc.text('📋 Grunddata', leftMargin + 5, y + 10);
+            
+            doc.setTextColor(51, 51, 51);
+            doc.setFontSize(11);
+            doc.setFont('helvetica', 'normal');
+            doc.text(`Befattning: ${info.namn}`, leftMargin + 5, y + 18);
+            doc.text(`Erfarenhet: ${answers.years_experience} år`, leftMargin + 90, y + 18);
+            
+            if (managerInfo) {
+                doc.text(`Chef: ${managerInfo.name}`, leftMargin + 5, y + 23);
+            }
+
+            y += 35;
+
+            // Resultatruta
+            doc.setFillColor(45, 53, 97);
+            doc.rect(leftMargin, y, contentWidth, 55, 'F');
+            
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(14);
+            doc.setFont('helvetica', 'bold');
+            doc.text('🎯 Resultat', pageWidth / 2, y + 12, { align: 'center' });
+            
+            doc.setFontSize(18);
+            doc.text(nivaInfo[result.level], pageWidth / 2, y + 25, { align: 'center' });
+            
+            doc.setFontSize(11);
+            doc.setFont('helvetica', 'normal');
+            doc.text(`${info.namn} - ${nivaBeskrivning[result.level]}`, pageWidth / 2, y + 33, { align: 'center' });
+
+            // Poängfördelning
+            doc.setFontSize(10);
+            const boxWidth = contentWidth / 4;
+            const boxY = y + 40;
+            
+            doc.text(`${result.breakdown.befattning}`, leftMargin + boxWidth * 0.5, boxY, { align: 'center' });
+            doc.text('Befattning', leftMargin + boxWidth * 0.5, boxY + 5, { align: 'center' });
+            
+            doc.text(`${result.breakdown.kunskap}`, leftMargin + boxWidth * 1.5, boxY, { align: 'center' });
+            doc.text('Kunskap', leftMargin + boxWidth * 1.5, boxY + 5, { align: 'center' });
+            
+            doc.text(`${result.breakdown.erfarenhet}`, leftMargin + boxWidth * 2.5, boxY, { align: 'center' });
+            doc.text('Erfarenhet', leftMargin + boxWidth * 2.5, boxY + 5, { align: 'center' });
+            
+            doc.text(`${result.breakdown.ledningsbehov}`, leftMargin + boxWidth * 3.5, boxY, { align: 'center' });
+            doc.text('Ledningsbehov', leftMargin + boxWidth * 3.5, boxY + 5, { align: 'center' });
+
+            y += 65;
+
+            // Flaskhalsprincipen
+            doc.setTextColor(51, 51, 51);
+            doc.setFontSize(10);
+            const flaskhalsText = `Flaskhalsprincipen: ${result.breakdown.befattning}-${result.breakdown.kunskap}-${result.breakdown.erfarenhet}-${result.breakdown.ledningsbehov} = NIVÅ ${result.level}`;
+            doc.text(flaskhalsText, pageWidth / 2, y, { align: 'center' });
+            
+            if (result.bottlenecks && result.bottlenecks.length > 0) {
+                y += 6;
+                doc.text(`Begränsande: ${result.bottlenecks.join(', ')}`, pageWidth / 2, y, { align: 'center' });
+            }
+
+            y += 15;
+
+            // Nästa steg
+            doc.setFillColor(232, 245, 233);
+            doc.rect(leftMargin, y, contentWidth, 20, 'F');
+            doc.setDrawColor(76, 175, 80);
+            doc.setLineWidth(1);
+            doc.line(leftMargin, y, leftMargin, y + 20);
+            
+            doc.setTextColor(46, 125, 50);
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'bold');
+            doc.text('📌 Nästa steg', leftMargin + 5, y + 8);
+            
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(10);
+            doc.setTextColor(27, 94, 32);
+            doc.text('Boka in ett möte med din chef för att diskutera din självskattning.', leftMargin + 5, y + 15);
+
+            y += 30;
+
+            // Footer
+            doc.setTextColor(153, 153, 153);
+            doc.setFontSize(9);
+            doc.text(`Kompetensbedömning IT-service • ${datum}`, pageWidth / 2, y, { align: 'center' });
+
+            // Returnera som blob
+            const pdfBlob = doc.output('blob');
+            console.log('jsPDF blob size:', pdfBlob.size);
+            return pdfBlob;
         }
 
         async function laddaNerPDF() {
