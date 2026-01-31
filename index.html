@@ -1321,9 +1321,21 @@
         // PDF GENERATION
         // ═══════════════════════════════════════════════════════════
 
+        function getSvarText(value) {
+            const labels = {
+                '1': 'Instämmer helt med A',
+                '2': 'Instämmer delvis med A', 
+                '3': 'Neutral',
+                '4': 'Instämmer delvis med B',
+                '5': 'Instämmer helt med B'
+            };
+            return labels[value] || value;
+        }
+
         function genereraRapportHTML() {
             const { befattning, result, answers } = window.currentAssessment;
             const info = BEFATTNINGAR[befattning];
+            const specifika = SPECIFIKA_PAR[befattning] || [];
             
             const nivaInfo = {
                 1: { titel: 'NIVÅ 1 - Operativ', beskrivning: 'Grundläggande uppgifter under övervakning' },
@@ -1337,6 +1349,62 @@
                 year: 'numeric', 
                 month: 'long', 
                 day: 'numeric' 
+            });
+
+            // Generera HTML för gemensamma frågepar
+            let gemensommaHTML = '';
+            GEMENSAMMA_PAR.forEach((par, index) => {
+                const valA = answers[par.id + 'a'];
+                const valB = answers[par.id + 'b'];
+                gemensommaHTML += `
+                    <div style="margin-bottom: 12px; padding: 10px; background: ${index % 2 === 0 ? '#f9f9f9' : '#fff'}; border-radius: 4px;">
+                        <div style="font-weight: bold; color: #2d3561; margin-bottom: 5px;">Fråga ${index + 1}</div>
+                        <div style="display: flex; margin-bottom: 4px;">
+                            <span style="color: #666; min-width: 25px;">A:</span>
+                            <span>${par.a}</span>
+                            <span style="margin-left: auto; font-weight: bold; color: #2d3561;">${valA || '-'}</span>
+                        </div>
+                        <div style="display: flex;">
+                            <span style="color: #666; min-width: 25px;">B:</span>
+                            <span>${par.b}</span>
+                            <span style="margin-left: auto; font-weight: bold; color: #2d3561;">${valB || '-'}</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            // Generera HTML för specifika frågepar
+            let specifikaHTML = '';
+            specifika.forEach((par, index) => {
+                const valA = answers[par.id + 'a'];
+                const valB = answers[par.id + 'b'];
+                specifikaHTML += `
+                    <div style="margin-bottom: 12px; padding: 10px; background: ${index % 2 === 0 ? '#f9f9f9' : '#fff'}; border-radius: 4px;">
+                        <div style="font-weight: bold; color: #2d3561; margin-bottom: 5px;">Fråga ${index + 1}</div>
+                        <div style="display: flex; margin-bottom: 4px;">
+                            <span style="color: #666; min-width: 25px;">A:</span>
+                            <span>${par.a}</span>
+                            <span style="margin-left: auto; font-weight: bold; color: #2d3561;">${valA || '-'}</span>
+                        </div>
+                        <div style="display: flex;">
+                            <span style="color: #666; min-width: 25px;">B:</span>
+                            <span>${par.b}</span>
+                            <span style="margin-left: auto; font-weight: bold; color: #2d3561;">${valB || '-'}</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            // Generera HTML för valideringsfrågor
+            let valideringHTML = '';
+            VALIDERINGS_FRAGOR.forEach((fraga, index) => {
+                const val = answers[fraga.id];
+                valideringHTML += `
+                    <div style="margin-bottom: 8px; padding: 8px; background: ${index % 2 === 0 ? '#f9f9f9' : '#fff'}; border-radius: 4px; display: flex; justify-content: space-between;">
+                        <span>${fraga.text}</span>
+                        <span style="font-weight: bold; color: #2d3561; min-width: 30px; text-align: right;">${val || '-'}</span>
+                    </div>
+                `;
             });
 
             return `
@@ -1391,6 +1459,24 @@
                         </div>
                     </div>
 
+                    <div style="margin-bottom: 25px;">
+                        <h2 style="color: #2d3561; font-size: 18px; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid #2d3561;">📝 Gemensamma frågor (${GEMENSAMMA_PAR.length} par)</h2>
+                        <p style="font-size: 12px; color: #666; margin-bottom: 15px;">Skala: 1 = Instämmer helt med A, 3 = Neutral, 5 = Instämmer helt med B</p>
+                        ${gemensommaHTML}
+                    </div>
+
+                    <div style="margin-bottom: 25px;">
+                        <h2 style="color: #2d3561; font-size: 18px; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid #2d3561;">💼 Befattningsspecifika frågor - ${info.namn} (${specifika.length} par)</h2>
+                        <p style="font-size: 12px; color: #666; margin-bottom: 15px;">Skala: 1 = Instämmer helt med A, 3 = Neutral, 5 = Instämmer helt med B</p>
+                        ${specifikaHTML}
+                    </div>
+
+                    <div style="margin-bottom: 25px;">
+                        <h2 style="color: #2d3561; font-size: 18px; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid #2d3561;">📊 Övriga bedömningsfrågor</h2>
+                        <p style="font-size: 12px; color: #666; margin-bottom: 15px;">Skala: 1 = Instämmer inte alls, 5 = Instämmer helt</p>
+                        ${valideringHTML}
+                    </div>
+
                     <div style="background: #e8f5e9; padding: 20px; border-radius: 8px; border-left: 4px solid #4caf50;">
                         <h3 style="color: #2e7d32; margin: 0 0 10px 0; font-size: 16px;">📌 Nästa steg</h3>
                         <p style="margin: 0; color: #1b5e20;">Boka in ett möte med din chef för att diskutera din självskattning. Er gemensamma bedömning blir underlag för din utvecklingsplan.</p>
@@ -1438,7 +1524,7 @@
                 // Ta bort temporär div
                 document.body.removeChild(tempDiv);
 
-                // Skapa PDF från canvas
+                // Skapa PDF från canvas med stöd för flera sidor
                 const imgData = canvas.toDataURL('image/jpeg', 0.95);
                 const pdf = new jsPDF('p', 'mm', 'a4');
                 
@@ -1447,15 +1533,22 @@
                 const imgWidth = pdfWidth;
                 const imgHeight = (canvas.height * pdfWidth) / canvas.width;
                 
-                // Om bilden är högre än en sida, skala ner
-                let finalHeight = imgHeight;
-                let finalWidth = imgWidth;
-                if (imgHeight > pdfHeight) {
-                    finalHeight = pdfHeight - 10;
-                    finalWidth = (canvas.width * finalHeight) / canvas.height;
-                }
+                // Hantera flera sidor om innehållet är längre än en A4
+                let heightLeft = imgHeight;
+                let position = 0;
+                const pageHeight = pdfHeight;
 
-                pdf.addImage(imgData, 'JPEG', 0, 0, finalWidth, finalHeight);
+                // Första sidan
+                pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+                heightLeft -= pageHeight;
+
+                // Lägg till fler sidor om det behövs
+                while (heightLeft > 0) {
+                    position = heightLeft - imgHeight;
+                    pdf.addPage();
+                    pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+                    heightLeft -= pageHeight;
+                }
                 
                 const pdfBlob = pdf.output('blob');
                 console.log('PDF blob size:', pdfBlob.size);
