@@ -60,6 +60,19 @@
 
         .header-note strong { display: block; font-size: 1.1em; margin-bottom: 8px; }
 
+        .popup-warning {
+            background: rgba(255, 107, 53, 0.2);
+            border-left: 4px solid var(--accent);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-size: 0.95em;
+            display: none;
+        }
+
+        .popup-warning.show { display: block; }
+        .popup-warning strong { display: block; font-size: 1.1em; margin-bottom: 8px; color: var(--accent); }
+
         #userInfo {
             margin-top: 15px;
             opacity: 0.9;
@@ -433,6 +446,20 @@
                 Detta är en <strong>självskattning</strong> som används som underlag för dialog med din chef. 
                 Din chef gör den officiella bedömningen enligt organisationens nivåkriterier.
             </div>
+
+            <div class="popup-warning" id="popupWarning">
+                <strong>🚫 Popup-fönster blockerade!</strong>
+                Din webbläsare blockerar popup-fönster som krävs för att skicka e-post med din bedömning. 
+                <strong>Du måste tillåta popup-fönster för denna sida</strong> innan du påbörjar bedömningen, 
+                annars kan du inte skicka resultatet när du är klar.
+                <br><br>
+                📋 <strong>Så här tillåter du popups:</strong>
+                <ul style="margin-top: 10px; margin-left: 20px;">
+                    <li>Klicka på popup-ikonen i adressfältet (vanligtvis till höger)</li>
+                    <li>Välj "Tillåt alltid popup-fönster från denna webbplats"</li>
+                    <li>Ladda om sidan</li>
+                </ul>
+            </div>
             
             <div id="userInfo"></div>
         </div>
@@ -711,6 +738,14 @@
         }
 
         async function getGraphAccessToken(scopes = ['User.Read', 'User.Read.All']) {
+            // Extra kontroll av popup-blockering vid autentiseringsförsök
+            if (popupBlocked) {
+                alert('⚠️ Popup-fönster är blockerade!\n\n' +
+                      'Denna applikation kräver popup-fönster för autentisering och e-postutskick.\n' +
+                      'Tillåt popup-fönster i din webbläsare och försök igen.');
+                return null;
+            }
+
             if (!msalInstance) {
                 await initializeMsal();
             }
@@ -865,6 +900,12 @@
         befattningSelect.addEventListener('change', function() {
             const befattning = this.value;
             if (!befattning) return;
+
+            // Kontrollera popup-blockering innan användaren börjar
+            if (!checkPopupBeforeStart()) {
+                this.value = ''; // Återställ valet
+                return;
+            }
 
             document.getElementById('grunddataSection').classList.remove('hidden');
             document.getElementById('fragorSection').classList.remove('hidden');
@@ -1775,12 +1816,50 @@
         }
 
         // ═══════════════════════════════════════════════════════════
+        // POPUP BLOCKERING DETEKTION
+        // ═══════════════════════════════════════════════════════════
+
+        let popupBlocked = false;
+
+        function detectPopupBlocker() {
+            try {
+                const popup = window.open('', '_blank', 'width=1,height=1');
+                if (!popup || popup.closed || typeof popup.closed === 'undefined') {
+                    popupBlocked = true;
+                    document.getElementById('popupWarning').classList.add('show');
+                    return true;
+                } else {
+                    popup.close();
+                    popupBlocked = false;
+                    document.getElementById('popupWarning').classList.remove('show');
+                    return false;
+                }
+            } catch (e) {
+                popupBlocked = true;
+                document.getElementById('popupWarning').classList.add('show');
+                return true;
+            }
+        }
+
+        function checkPopupBeforeStart() {
+            if (detectPopupBlocker()) {
+                alert('⚠️ VARNING: Popup-fönster är blockerade!\n\n' +
+                      'Du måste tillåta popup-fönster för denna sida för att kunna skicka din bedömning via e-post.\n\n' +
+                      'Tillåt popup-fönster och ladda om sidan innan du fortsätter.');
+                return false;
+            }
+            return true;
+        }
+
+        // ═══════════════════════════════════════════════════════════
         // INITIALIZATION
         // ═══════════════════════════════════════════════════════════
 
         document.addEventListener('DOMContentLoaded', function() {
             fetchUserInfo();
             initializeMsal();
+            // Detektera popup-blockering vid sidladdning
+            setTimeout(detectPopupBlocker, 1000);
         });
     </script>
 </body>
